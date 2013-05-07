@@ -657,6 +657,8 @@ label.error { color: #b94a48; }
 
 #appliance-name h3 { margin-bottom: 24px; }
 
+#appliance-name { color: #fff; }
+
 #appliance-select-content {
   height: 400px;
   overflow-y: auto;
@@ -664,8 +666,13 @@ label.error { color: #b94a48; }
 }
 
 #appliance-breadcrumb {
-  padding: 6px 0px 6px 0px;
+  padding: 6px 0px 8px 0px;
   font-size: 14px;
+  background: #999;
+}
+
+#alert-sign {
+  margin-right: 20px;
 }
 
 #maincontent {
@@ -796,5 +803,10 @@ hr.module-sep { margin: 0; border: 0; border-top: 1px solid #ddd; }
   width: 100px;
   height: 20px;
   float: left;
+}
+
+#cpu-history-graph {
+  width: 250px;
+  height: 100px;
 }
 

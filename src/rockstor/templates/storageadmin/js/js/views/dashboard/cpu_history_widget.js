@@ -35,6 +35,25 @@ CpuHistoryWidget = RockStorWidgetView.extend({
 
   render: function() {
     $(this.el).html(this.template());
+    var placeholder = this.$("#cpu-history-graph");
+    var data = [ [[1, 10], [2, 20], [3, 15], [4, 20], [5, 60] ] ];
+    var plot = $.plot(placeholder, data, {
+      series: {
+        lines: {
+          show: true
+        },
+        shadowSize: 0
+      },
+      xaxis: {
+        zoomRange: [1, 100],
+      },
+      yaxis: {
+        zoomRange: [1, 100],
+      },
+      zoom: {
+        interactive: true
+      },
+    });
     return this;
   },
 
