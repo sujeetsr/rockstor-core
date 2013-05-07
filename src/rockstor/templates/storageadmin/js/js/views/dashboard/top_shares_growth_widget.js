@@ -24,32 +24,60 @@
  * 
  */
 
-SysInfoWidget = RockStorWidgetView.extend({
+TopSharesGrowthWidget = RockStorWidgetView.extend({
   
   initialize: function() {
     // call initialize of base
     this.constructor.__super__.initialize.apply(this, arguments);
-    logger.debug('in SysInfoWidget initialize');
-    this.template = window.JST.dashboard_widgets_sysinfo;
+    this.template = window.JST.dashboard_widgets_top_shares_growth;
     this.sysinfo = new SysInfo();
   },
 
   render: function() {
-    var _this = this;
-    this.sysinfo.fetch({
-      success: function() {
-        _this.renderSysInfo();
-      }
+    $(this.el).html(this.template());
+    var options = {
+      yaxis: { max: 65, position: 'left' },
+      xaxis: { max: 6 },
+      grid: { show: false },
+      legend: { show:false },
+    };
+    var data1 = [[0, 20], [1, 25], [3, 35], [4, 38], [5, 60]];
+    var data2 = [[0, 10], [1, 35], [3, 45], [4, 48], [5, 55]];
+    var series1 = [{
+      data: data1,
+      color: "#000000",
+      lines: { lineWidth: 0.8 },
+      shadowSize: 0
+    }];
+    series1.push({
+      data: [ data1[data1.length - 1] ],
+      points: {
+        show: true,
+        radius: 1,
+        fillColor: '#ff0000'
+      },
+      color: '#ff0000'
     });
+    $.plot(this.$("#chart_1"), series1, options );
+    var series2 = [{
+      data: data2,
+      color: "#000000",
+      lines: { lineWidth: 0.8 },
+      shadowSize: 0
+    }];
+    series2.push({
+      data: [ data2[data2.length - 1] ],
+      points: {
+        show: true,
+        radius: 1,
+        fillColor: '#ff0000'
+      },
+      color: '#ff0000'
+    });
+    $.plot(this.$("#chart_2"), series2, options );
     return this;
   },
 
-  renderSysInfo: function() {
-    $(this.el).html(this.template({ 
-      module_name: this.module_name,
-      model: this.sysinfo
-    }));
-
-  },
-
 });
+
+

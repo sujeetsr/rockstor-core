@@ -111,14 +111,18 @@ RockStorWidgetView = Backbone.View.extend({
   className: 'widget',
   
   events: {
-    'click .widget-resize': 'resize',
+    'click .resize': 'resize',
+    'click .configure': 'configure',
   },
 
   initialize: function() {
   },
 
-  resize: function() {
+  resize: function(event) {
     logger.debug('in resize');
+    if (!_.isUndefined(event) && !_.isNull(event)) {
+      event.preventDefault();
+    }
     if ($(this.el).hasClass('large')) {
       $(this.el).removeClass('large');
     } else {
@@ -126,6 +130,13 @@ RockStorWidgetView = Backbone.View.extend({
     }
   },
   
+  configure: function(event) {
+    if (!_.isUndefined(event) && !_.isNull(event)) {
+      event.preventDefault();
+    }
+    logger.debug('in rockstor widget configure');
+  }
+
 });
 
 RockstoreButtonView = Backbone.View.extend({

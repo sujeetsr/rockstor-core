@@ -792,3 +792,9 @@ hr.module-sep { margin: 0; border: 0; border-top: 1px solid #ddd; }
   
 }
 
+.share-growth-chart-small {
+  width: 100px;
+  height: 20px;
+  float: left;
+}
+
