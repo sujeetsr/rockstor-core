@@ -172,7 +172,6 @@ a#logo-name { color: #fff; }
   position: absolute;
   top: 4px;
   right: 4px;
-  visibility: hidden;
 }
 
 .module .smalltitle{
@@ -757,8 +756,37 @@ hr.module-sep { margin: 0; border: 0; border-top: 1px solid #ddd; }
 
 /* Widgets */
 .widget {
-  padding: 12px 12px 12px 12px;
+  float: left;
+  width: 45%;
   margin-bottom: 24px;
   border: 1px solid #ddd;
   box-shadow: 0px 0px 12px rgb(238, 238, 238);
+  margin-right: 10px;
+  height: 300px;
 }
+
+.widget.large {
+  width: 95%;
+  height: 300px;
+  margin-right: none;
+}
+
+.widget-header {
+  position: relative;
+  margin-bottom: 12px;
+  padding: 4px 12px 4px 12px;
+  background: rgb(32, 141, 190);
+  color: #fff;
+}
+
+.widget-header .gear {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+}
+
+.widget-content {
+  padding: 4px 12px 4px 12px;
+  
+}
+
