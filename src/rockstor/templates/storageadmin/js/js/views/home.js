@@ -123,14 +123,18 @@ var HomeLayoutView = RockstoreLayoutView.extend({
     widget_list = this.dashboardconfig.get('widgets').split(',');
     logger.debug(widget_list);
     this.cleanupArray.length = 0;
+    row = $('<div class="row-fluid"/>');
+    parentElem.append(row);
     _.each(widget_list, function(widget, index, list ) {
       logger.debug('rendering ' + widget); 
       logger.debug('i = ' + i);
-      if ((i % 3) == 0) {
+      /*
+      if ((i % 2) == 0) {
         logger.debug('creating row');
         row = $('<div class="row-fluid"/>');
         parentElem.append(row);
       }
+      */
       var view_name = _this.available_widgets[widget].view;
       if (!_.isUndefined(window[view_name] && !_.isNull(window[view_name]))) {
         logger.debug('creating view ' + view_name);
@@ -139,9 +143,9 @@ var HomeLayoutView = RockstoreLayoutView.extend({
           cleanupArray: _this.cleanupArray
         });
         _this.cleanupArray.push(view);
-        var span = $('<div class="span4"></div>');
-        span.append(view.render().el);
-        row.append(span);
+        //var span = $('<div class="span6"></div>');
+        row.append(view.render().el);
+        //row.append(span);
         i = i+1;
       }
     });

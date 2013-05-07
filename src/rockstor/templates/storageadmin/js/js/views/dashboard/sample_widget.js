@@ -26,6 +26,8 @@
 
 
 SampleWidget = Backbone.View.extend({
+  tagName: 'div',
+  className: 'widget',
 
   initialize: function() {
     this.template = window.JST.dashboard_widgets_sample;

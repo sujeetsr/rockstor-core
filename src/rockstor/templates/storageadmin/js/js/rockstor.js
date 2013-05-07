@@ -106,6 +106,28 @@ RockstoreModuleView = Backbone.View.extend({
   }
 });
 
+RockStorWidgetView = Backbone.View.extend({
+  tagName: 'div',
+  className: 'widget',
+  
+  events: {
+    'click .widget-resize': 'resize',
+  },
+
+  initialize: function() {
+  },
+
+  resize: function() {
+    logger.debug('in resize');
+    if ($(this.el).hasClass('large')) {
+      $(this.el).removeClass('large');
+    } else {
+      $(this.el).addClass('large');
+    }
+  },
+  
+});
+
 RockstoreButtonView = Backbone.View.extend({
   tagName: 'div',
   className: 'button-bar',
