@@ -24,9 +24,13 @@
  * 
  */
 
-SysInfoWidget = Backbone.View.extend({
+SysInfoWidget = RockStorWidgetView.extend({
+  tagName: 'div',
+  className: 'widget',
 
   initialize: function() {
+    // call initialize of base
+    this.constructor.__super__.initialize.apply(this, arguments);
     logger.debug('in SysInfoWidget initialize');
     this.template = window.JST.dashboard_widgets_sysinfo;
     this.sysinfo = new SysInfo();
@@ -48,6 +52,6 @@ SysInfoWidget = Backbone.View.extend({
       model: this.sysinfo
     }));
 
-  }
+  },
 
 });
