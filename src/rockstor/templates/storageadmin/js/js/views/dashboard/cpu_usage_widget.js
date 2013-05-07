@@ -25,11 +25,11 @@
  */
 
 
-CpuUsageWidget = Backbone.View.extend({
-  tagName: 'div',
-  className: 'widget',
+CpuUsageWidget = RockStorWidgetView.extend({
   
   initialize: function() {
+    // call initialize of base
+    this.constructor.__super__.initialize.apply(this, arguments);
     this.template = window.JST.dashboard_widgets_cpuusage;
     this.numSamples = 120;
     this.cpu_data = [];
@@ -149,6 +149,13 @@ CpuUsageWidget = Backbone.View.extend({
     if (!_.isUndefined(this.intervalId)) {
       window.clearInterval(this.intervalId);
     }
+  },
+
+  configure: function(event) {
+    if (!_.isUndefined(event) && !_.isNull(event)) {
+      event.preventDefault();
+    }
+    logger.debug('in cpu_usage configure');
   }
 
 });

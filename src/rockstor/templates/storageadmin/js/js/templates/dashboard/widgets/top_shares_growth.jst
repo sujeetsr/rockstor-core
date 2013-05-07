@@ -23,7 +23,7 @@
 <div class="row-fluid">
   <div class="span12">
     <div class="widget-header">
-      <div class="title"><span class="h3">System Info</span></div>
+      <div class="title"><span class="h3">Top Shares by Growth</span></div>
       <div class="gear">
         <a class="resize" href="#"><i class="icon-resize-full"></i></a>
       </div>
@@ -37,18 +37,23 @@
   <div class="span12">
     <!-- Content -->
     <div class="widget-content">
-      <div class="row-fluid">
-        <div class="span12">
-          Load average: <span id="load-avg"></span> <br>
-          <% _.each(_.keys(model.attributes), function(k) { %>
-            <%= k %>: <%= model.get(k) %><br>
-          <% }); %>
-        </div>
+      <h3>Share growth in the last month</h3>
+      <div class="share-growth-chart-small" id="chart_1"></div>
+      <div class="share-growth-label">
+        <a href="#shares/share1"><span class="h4">share1</span></a>&nbsp;<span style="color: #ff0000">60%</span>
+      </div>
+      <br>
+      <div class="share-growth-chart-small" id="chart_2"></div>
+      <div class="share-growth-label">
+        <a href="shares/share1"><span class="h4">share2</span></a>&nbsp;<span style="color: #ff0000">55%</span>
       </div>
     </div>
     <!-- End Content -->
   </div> <!-- span12 -->
 </div> <!-- row-fluid --> 
 <!-- end widget body -->
+
+
+
 
 

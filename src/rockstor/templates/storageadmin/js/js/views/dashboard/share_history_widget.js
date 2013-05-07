@@ -24,32 +24,20 @@
  * 
  */
 
-SysInfoWidget = RockStorWidgetView.extend({
+ShareHistoryWidget = RockStorWidgetView.extend({
   
   initialize: function() {
     // call initialize of base
     this.constructor.__super__.initialize.apply(this, arguments);
-    logger.debug('in SysInfoWidget initialize');
-    this.template = window.JST.dashboard_widgets_sysinfo;
+    this.template = window.JST.dashboard_widgets_share_history;
     this.sysinfo = new SysInfo();
   },
 
   render: function() {
-    var _this = this;
-    this.sysinfo.fetch({
-      success: function() {
-        _this.renderSysInfo();
-      }
-    });
+    $(this.el).html(this.template());
     return this;
   },
 
-  renderSysInfo: function() {
-    $(this.el).html(this.template({ 
-      module_name: this.module_name,
-      model: this.sysinfo
-    }));
-
-  },
-
 });
+
+

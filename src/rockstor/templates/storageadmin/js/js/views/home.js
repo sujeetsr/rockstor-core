@@ -50,9 +50,9 @@ var HomeLayoutView = RockstoreLayoutView.extend({
     this.available_widgets = { 
       'sysinfo': { display_name: 'System Information', view: 'SysInfoWidget' },
       'cpu_usage': { display_name: 'CPU Usage', view: 'CpuUsageWidget' },
-      'sample': { display_name: 'Sample Widget', view: 'SampleWidget' },
-      'alerts': { display_name: 'Alerts', view: 'SampleWidget' },
-      'top_shares_usage': { display_name: 'Top Shares By Usage', view: 'SampleWidget' },
+      'cpu_history': { display_name: 'CPU Usage History', view: 'CpuHistoryWidget' },
+      'share_usage_history': { display_name: 'Share Usage History', view: 'ShareHistoryWidget' },
+      'top_shares_growth': { display_name: 'Top Shares By Growth', view: 'TopSharesGrowthWidget' },
     };
     this.cleanupArray = []; // widgets add themselves here so that their cleanup routines can be called from this view's cleanup
   },
