@@ -48,11 +48,11 @@ var HomeLayoutView = RockstoreLayoutView.extend({
     this.dependencies.push(this.dashboardconfig);
 
     this.available_widgets = { 
-      'sysinfo': { display_name: 'System Information', view: 'SysInfoWidget' },
-      'cpu_usage': { display_name: 'CPU Usage', view: 'CpuUsageWidget' },
-      'cpu_history': { display_name: 'CPU Usage History', view: 'CpuHistoryWidget' },
-      'share_usage_history': { display_name: 'Share Usage History', view: 'ShareHistoryWidget' },
-      'top_shares_growth': { display_name: 'Top Shares By Growth', view: 'TopSharesGrowthWidget' },
+      'sysinfo': { display_name: 'System Information', view: 'SysInfoWidget', type: 'Compute'},
+      'cpu_usage': { display_name: 'CPU Usage', view: 'CpuUsageWidget', type: 'Compute'},
+      'cpu_history': { display_name: 'CPU Usage History', view: 'CpuHistoryWidget', type: 'Compute'},
+      'share_usage_history': { display_name: 'Share Usage History', view: 'ShareHistoryWidget', type: 'Storage'},
+      'top_shares_growth': { display_name: 'Top Shares By Growth', view: 'TopSharesGrowthWidget', type: 'Storage' },
     };
     this.cleanupArray = []; // widgets add themselves here so that their cleanup routines can be called from this view's cleanup
   },

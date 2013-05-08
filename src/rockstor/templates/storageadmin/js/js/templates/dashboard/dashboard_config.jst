@@ -22,35 +22,43 @@
 <div class="row-fluid">
   <div class="span12">
     <div class="pageheading">
-      <div id="title" class="title"><span class="h1">Select Widgets</span></div>
+      <div id="title" class="title"><span class="h1">Dashboard Configuration</span></div>
     </div>
   </div> <!-- span12 -->
 </div> <!-- row-fluid -->
 
 <div class="row-fluid">
   <div class="span12">
-    <table id="widget-selections" class="table table-condensed table-bordered table-hover table-striped"style="width: 100%">
-      <thead>
-      </thead>
-      <tbody>
-        <% _.each(available_widgets, function(widget, name) { %>
-          <tr>
-            <td>
-              <% if (_.indexOf(selected_widgets, name) == -1) { %>
-                <input class="widget-name" type="checkbox" name="selections" value="<%= name %>"></input>
+    <h3>Select widgets that you want on the dashboard</h3>
 
-              <% } else { %>
-                <input class="widget-name" type="checkbox" name="selections" value="<%= name %>" checked="checked"></input>
+    <% var widget_types = ['Compute', 'Storage', 'Network']; %>
+    <% _.each(widget_types, function(widget_type) { %>
+      <h3><%= widget_type %></h3>
+      <table id="widget-selections" class="table table-condensed table-bordered table-hover table-striped"style="width: 100%">
+        <thead>
+        </thead>
+        <tbody>
+          <% _.each(available_widgets, function(widget, name) { %>
+            <% if (widget.type == widget_type) { %>
+              <tr>
+                <td>
+                  <% if (_.indexOf(selected_widgets, name) == -1) { %>
+                    <input class="widget-name" type="checkbox" name="selections" value="<%= name %>"></input>
 
-              <% } %>
-            </td>
-            <td>
-              <%= widget.display_name %>
-            </td>
+                  <% } else { %>
+                    <input class="widget-name" type="checkbox" name="selections" value="<%= name %>" checked="checked"></input>
+
+                  <% } %>
+                </td>
+                <td>
+                  <%= widget.display_name %>
+                </td>
+              </tr>
+            <% } %>
           <% }); %>
-        </tr>
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    <% }); %>
 
     <button id="save" class="btn btn-primary">Save</button>
   </div>
