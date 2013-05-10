@@ -123,11 +123,13 @@ RockStorWidgetView = Backbone.View.extend({
     if (!_.isUndefined(event) && !_.isNull(event)) {
       event.preventDefault();
     }
-    if ($(this.el).hasClass('large')) {
-      $(this.el).removeClass('large');
+    var li = $(this.el).closest('li');
+    if (_.isUndefined(li.attr('data-ss-colspan'))) {
+      li.attr('data-ss-colspan',2);
     } else {
-      $(this.el).addClass('large');
+      li.removeAttr('data-ss-colspan');
     }
+    $('.widgets-container').trigger('ss-rearrange');
   },
   
   configure: function(event) {

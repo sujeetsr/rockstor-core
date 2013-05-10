@@ -108,7 +108,7 @@ var HomeLayoutView = RockstoreLayoutView.extend({
   },
 
   renderWidgets: function() {
-    parentElem = this.$('#widgets-container');
+    parentElem = this.$('.widgets-container');
     var _this = this;
     parentElem.empty();
     logger.debug('in home.js renderWidgets');
@@ -122,19 +122,35 @@ var HomeLayoutView = RockstoreLayoutView.extend({
     logger.debug(this.dashboardconfig.get('widgets'));
     widget_list = this.dashboardconfig.get('widgets').split(',');
     logger.debug(widget_list);
+
     this.cleanupArray.length = 0;
+    _.each(widget_list, function(widget, index, list ) {
+      var view_name = _this.available_widgets[widget].view;
+      if (!_.isUndefined(window[view_name] && !_.isNull(window[view_name]))) {
+        logger.debug('creating view ' + view_name);
+        var view = new window[view_name]({
+          display_name: _this.available_widgets[widget].display_name,
+          cleanupArray: _this.cleanupArray
+        });
+        var widget_elem = $('<li></li>');
+        parentElem.append(widget_elem);
+        var position_div = $('<div class="position"></div>');
+        widget_elem.append(position_div);
+        position_div.append(view.render().el);
+        _this.cleanupArray.push(view);
+        
+      }
+      
+    });
+    logger.debug('calling shapeshift');
+    this.$('.widgets-container').shapeshift();
+
+    /*
     row = $('<div class="row-fluid"/>');
     parentElem.append(row);
     _.each(widget_list, function(widget, index, list ) {
       logger.debug('rendering ' + widget); 
       logger.debug('i = ' + i);
-      /*
-      if ((i % 2) == 0) {
-        logger.debug('creating row');
-        row = $('<div class="row-fluid"/>');
-        parentElem.append(row);
-      }
-      */
       var view_name = _this.available_widgets[widget].view;
       if (!_.isUndefined(window[view_name] && !_.isNull(window[view_name]))) {
         logger.debug('creating view ' + view_name);
@@ -149,6 +165,7 @@ var HomeLayoutView = RockstoreLayoutView.extend({
         i = i+1;
       }
     });
+    */
   },
 
   cleanup: function() {
