@@ -111,8 +111,9 @@ RockStorWidgetView = Backbone.View.extend({
   className: 'widget',
   
   events: {
-    'click .resize': 'resize',
-    'click .configure': 'configure',
+    'click .resize-widget': 'resize',
+    'click .configure-widget': 'configure',
+    'click .close-widget': 'close',
   },
 
   initialize: function() {
@@ -137,6 +138,15 @@ RockStorWidgetView = Backbone.View.extend({
       event.preventDefault();
     }
     logger.debug('in rockstor widget configure');
+  },
+
+  close: function(event) {
+    var li = $(event.currentTarget).closest('li');
+    console.log(li); 
+    li.remove();
+    $('.widgets-container').trigger('ss-rearrange');
+    
+    // TODO save layout
   }
 
 });

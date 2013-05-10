@@ -85,12 +85,6 @@ var HomeLayoutView = RockstoreLayoutView.extend({
     // render dashboard widgets
     this.renderWidgets();
 
-    //create subviews
-    //this.subviews['sysinfo'] = new SysInfoModule({model: this.sysinfo});
-    //this.subviews['cpuusage'] = new CpuUsageModule();
-    // render subviews
-    //this.$('#ph-sysinfo').append(this.subviews['sysinfo'].render().el);
-    //this.$('#ph-cpuusage').append(this.subviews['cpuusage'].render().el);
   },
 
   dashboardConfig: function() {
@@ -144,28 +138,17 @@ var HomeLayoutView = RockstoreLayoutView.extend({
     });
     logger.debug('calling shapeshift');
     this.$('.widgets-container').shapeshift();
-
-    /*
-    row = $('<div class="row-fluid"/>');
-    parentElem.append(row);
-    _.each(widget_list, function(widget, index, list ) {
-      logger.debug('rendering ' + widget); 
-      logger.debug('i = ' + i);
-      var view_name = _this.available_widgets[widget].view;
-      if (!_.isUndefined(window[view_name] && !_.isNull(window[view_name]))) {
-        logger.debug('creating view ' + view_name);
-        var view = new window[view_name]({
-          display_name: _this.available_widgets[widget].display_name,
-          cleanupArray: _this.cleanupArray
-        });
-        _this.cleanupArray.push(view);
-        //var span = $('<div class="span6"></div>');
-        row.append(view.render().el);
-        //row.append(span);
-        i = i+1;
-      }
+   
+    // set handlers for layout modification events
+    this.$('.widgets-container').on('ss-rearrange', function(e) {
+      console.log('in rearrange handler');
     });
-    */
+    this.$('.widgets-container').on('ss-drop-complete', function(e) {
+      console.log('in drop-complete handler');
+    });
+    this.$('.widgets-container').on('ss-trashed', function(e) {
+      console.log('in ss-trashed handler');
+    });
   },
 
   cleanup: function() {
