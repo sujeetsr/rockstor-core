@@ -140,13 +140,13 @@ var HomeLayoutView = RockstoreLayoutView.extend({
     this.$('.widgets-container').shapeshift();
    
     // set handlers for layout modification events
-    this.$('.widgets-container').on('ss-rearrange', function(e) {
-      console.log('in rearrange handler');
+    this.$('.widgets-container').on('ss-rearranged', function(e, selected) {
+      console.log('in rearranged handler');
     });
-    this.$('.widgets-container').on('ss-drop-complete', function(e) {
+    this.$('.widgets-container').on('ss-drop-complete', function(e, selected) {
       console.log('in drop-complete handler');
     });
-    this.$('.widgets-container').on('ss-trashed', function(e) {
+    this.$('.widgets-container').on('ss-trashed', function(e, selected) {
       console.log('in ss-trashed handler');
     });
   },
