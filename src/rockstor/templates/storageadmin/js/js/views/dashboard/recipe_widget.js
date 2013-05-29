@@ -60,7 +60,15 @@ RecipeWidget = RockStorWidgetView.extend({
         max: 100
       }
 		};
-    
+    /*
+    this.nfsMetricsAll = [
+      { name: 'Reads/sec', min: 20, max: 30 },
+      { name: 'Writes/sec', min: 50, max: 60 },
+      { name: 'Lookups/sec', min: 20, max: 30 },
+      { name: 'Bytes read/sec', min: 500000, max: 600000 },
+      { name: 'Bytes written/sec', min: 700000, max: 800000 }
+    ]; 
+    */
   },
 
   render: function() {
@@ -143,14 +151,21 @@ RecipeWidget = RockStorWidgetView.extend({
           type: 'GET',
           success: function(data, textStatus, jqXHR) {
             _this.$('#recipestatus').html('Recipe running ');
+            window.clearInterval(_this.dataIntervalId);
+            /*
             logger.debug('received data ');
             logger.debug(data);
-            
+             
             _this.nfsData = _this.nfsData.slice(1);
             _this.nfsData.push(data.value);
             $.plot('#nfsgraph', _this.makeSeries(_this.nfsData), _this.graphOptions);
+            */
             // TODO update timestamp from data
             // _this.timestamp = new timestamp from data
+            
+            /* Draw graph */
+            _this.drawGraph(recipe_uri);
+            
           },
           error: function(jqXHR, textStatus, error) {
             window.clearInterval(_this.dataIntervalId);
@@ -182,9 +197,99 @@ RecipeWidget = RockStorWidgetView.extend({
       series[0].push([i,data[i]]);
     }
     return series;
+  },
+
+  drawGraph: function(recipe_uri) {
+    // create context
+    var context = cubism.context()
+    .step(1e3)
+    .size(600);
+    
+    // create horizon
+    var horizon = context.horizon()
+    .colors(['#08519c', '#6baed6'])
+    .height(60);
+
+    // axis
+    d3.select(this.el).select("#nfs-graph").selectAll(".axis")
+    .data(["top", "bottom"])
+    .enter().append("div")
+    .attr("class", function(d) { return d + " axis"; })
+    .each(function(d) { 
+      d3.select(this).call(context.axis().ticks(12).orient(d)); 
+    });
+
+    d3.select(this.el).select("#nfs-graph").append("div")
+    .attr("class", "rule")
+    .call(context.rule());
+    
+    var nfsContext = context.nfs(recipe_uri);
+    var nfsMetricRead = nfsContext.metric('Reads/sec');
+    var nfsMetricWrites = nfsContext.metric('Writes/sec');
+
+    d3.select(this.el).select("#nfs-graph").selectAll(".horizon")
+    .data([nfsMetricRead, nfsMetricWrites])
+    .enter().insert("div", ".bottom")
+    .attr("class", "horizon")
+    .call(horizon);
+
+    context.on("focus", function(i) {
+      d3.selectAll(".value").style("right", i == null ? null : context.size() - i + "px");
+    });
+
+
+  },
+
+  nfsMetricFn: function(nfsMetric) {
+
   }
 
+
+
+
+
 });
+
+cubism.context.prototype.nfs = function(recipe_uri) {
+  var source = {},
+      context = this;
+
+  source.metric = function(nfsMetric) {
+    return context.metric(function(start, stop, step, callback) {
+      $.ajax({
+        url: recipe_uri + '?t=' + this.timestamp,
+        type: 'GET',
+        success: function(data, textStatus, jqXHR) {
+          logger.debug('received data ');
+          logger.debug(data);
+          callback(null, data);
+
+        },
+        error: function(jqXHR, textStatus, error) {
+          window.clearInterval(_this.dataIntervalId);
+          logger.debug(error);
+          // TODO show error message on widget
+        }
+      });
+      /*
+      d3.json(host + "/1.0/metric"
+          + "?expression=" + encodeURIComponent(expression)
+          + "&start=" + cubism_cubeFormatDate(start)
+          + "&stop=" + cubism_cubeFormatDate(stop)
+          + "&step=" + step, function(data) {
+        if (!data) return callback(new Error("unable to load data"));
+        callback(null, data.map(function(d) { return d.value; }));
+      });
+    */
+    }, nfsMetric);
+  };
+
+  source.toString = function() {
+    return nfsMetric;
+  };
+
+  return source;
+};
 
 RockStorWidgets.available_widgets.push({ 
   name: 'nfs_recipe', 
@@ -192,8 +297,8 @@ RockStorWidgets.available_widgets.push({
   view: 'RecipeWidget',
   description: 'NFS Usage',
   defaultWidget: false,
-  rows: 1,
-  cols: 1,
+  rows: 2,
+  cols: 3,
   category: 'Storage'
 });
 

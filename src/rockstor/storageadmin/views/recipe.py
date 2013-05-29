@@ -18,6 +18,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 class RecipeView(APIView):
+    values = []
+
     def post(self, request, rname=None):
         try:
             logger.debug('in RecipeView')
@@ -30,8 +32,13 @@ class RecipeView(APIView):
             if 'status' in request.QUERY_PARAMS:
                 return Response({"recipe_status": "running"});
             else:
-                data = { "value": random.random() * 100}
-                return Response(data);
+                if len(RecipeView.values) == 0:
+                    for i in range(1,600):
+                        RecipeView.values.append(random.random() * 100);
+                else:
+                    RecipeView.values = RecipeView.values[1:599]
+                    RecipeView.values.append(random.random() * 100);
+                return Response(RecipeView.values);
         except Exception, e:
             handle_exception(e, request)
             

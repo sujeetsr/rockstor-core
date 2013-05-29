@@ -14,7 +14,45 @@
 <!-- Module Body -->
 <!-- Content -->
 <div class="widget-content">
+  <!--
   <div id="nfsgraph" style="width: 90%; height: 60%;"> </div>
+  -->
+
+  <div id="nfs-container">
+    <span id="nfs-breadcrumb">
+      <span id="nfs-title">NFS IO for all shares</span>
+      <span id="nfs-sharename"></span>
+    </span>
+
+    <span id="nfs-show-all-span">
+      <a href="#" id="nfs-show-all">Show all</a>
+    </span>
+    <div class="clear"></div>
+    <div id="nfs-graph">
+    </div>
+    <div id="nfs-shares">
+      Top Shares by IO 
+      <ul id="nfs-share-list">
+        <li class="nfs-share-item">
+          <a href="#" class="nfs-share-item-name">appdb</a> 
+          <span class="nfs-share-item-iops">IOPS 50/sec</span>
+        </li>
+        <li class="nfs-share-item">
+          <a href="#" class="nfs-share-item-name">userapps</a>
+          <span class="nfs-share-item-iops">IOPS 50/sec</span>
+        </li>
+        <li class="nfs-share-item">
+          <a href="#" class="nfs-share-item-name">misc</a>
+          <span class="nfs-share-item-iops">IOPS 50/sec</span>
+        </li>
+        <li class="nfs-share-item">
+          <a href="#" class="nfs-share-item-name">docs</a>
+          <span class="nfs-share-item-iops">IOPS 50/sec</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <br> 
   <div id="recipestatus">Recipe stopped</div>
   <a class="btn btn-primary start-recipe">Start Recipe</a>
   <a class="btn btn-primary stop-recipe">Stop Recipe</a>
