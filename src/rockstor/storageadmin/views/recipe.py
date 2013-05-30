@@ -30,7 +30,20 @@ class RecipeView(APIView):
     def get(self, request, recipe_id=None):
         try:
             if 'status' in request.QUERY_PARAMS:
-                return Response({"recipe_status": "running"});
+                return Response({"recipe_status": "running"})
+            elif 'top_shares' in request.QUERY_PARAMS:
+                top_shares = []
+                top_shares.append({"name": "dbshare1",\
+                        "iops": 200 + random.random() * 100})
+                top_shares.append({"name": "userapps",\
+                        "iops": 150 + random.random() * 50})
+                top_shares.append({"name": "docs",\
+                        "iops": 100 + random.random() * 50})
+                top_shares.append({"name": "misc",\
+                        "iops": 50 + random.random() * 50})
+                top_shares.append({"name": "scratch",\
+                        "iops": 50 + random.random() * 50})
+                return Response(top_shares)
             else:
                 if len(RecipeView.values) == 0:
                     for i in range(1,600):

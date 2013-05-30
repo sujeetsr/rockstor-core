@@ -922,7 +922,7 @@ ul.widgets-container li div.position {
 
 /* nfs recipe widget */
 #nfs-container { height: 400px; position: relative; }
-#nfs-graph { float: left; height: 100%; }
+#nfs-graph { float: left; width: 600px; height: 100%; }
 #nfs-shares { float: left; width: 200px; height: 350px; padding: 6px 6px 6px 30px; }
 #nfs-share-list { list-style: outside none; padding-left: 0px; }
 

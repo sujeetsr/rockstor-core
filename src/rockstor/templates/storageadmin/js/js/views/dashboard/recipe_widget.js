@@ -37,6 +37,7 @@ RecipeWidget = RockStorWidgetView.extend({
   initialize: function() {
     this.constructor.__super__.initialize.apply(this, arguments);
     this.template = window.JST.dashboard_widgets_recipe;
+    this.top_shares_template = window.JST.dashboard_widgets_top_shares;
     this.displayName = this.options.displayName;
     this.timestamp = 0;
     // periodically check status while polling for data is 
@@ -164,7 +165,8 @@ RecipeWidget = RockStorWidgetView.extend({
             // _this.timestamp = new timestamp from data
             
             /* Draw graph */
-            _this.drawGraph(recipe_uri);
+            _this.showNfsIO(recipe_uri);
+            _this.showTopShares(recipe_uri);
             
           },
           error: function(jqXHR, textStatus, error) {
@@ -199,7 +201,7 @@ RecipeWidget = RockStorWidgetView.extend({
     return series;
   },
 
-  drawGraph: function(recipe_uri) {
+  showNfsIO: function(recipe_uri) {
     // create context
     var context = cubism.context()
     .step(1e3)
@@ -207,7 +209,7 @@ RecipeWidget = RockStorWidgetView.extend({
     
     // create horizon
     var horizon = context.horizon()
-    .colors(['#08519c', '#6baed6'])
+    .colors(['#08519c', '#bae4b3'])
     .height(60);
 
     // axis
@@ -226,9 +228,13 @@ RecipeWidget = RockStorWidgetView.extend({
     var nfsContext = context.nfs(recipe_uri);
     var nfsMetricRead = nfsContext.metric('Reads/sec');
     var nfsMetricWrites = nfsContext.metric('Writes/sec');
+    var nfsMetricLookups = nfsContext.metric('Lookups/sec');
+    var nfsMetricReadBytes = nfsContext.metric('Bytes read/sec');
+    var nfsMetricWriteBytes = nfsContext.metric('Bytes written/sec');
 
     d3.select(this.el).select("#nfs-graph").selectAll(".horizon")
-    .data([nfsMetricRead, nfsMetricWrites])
+    .data([nfsMetricRead, nfsMetricWrites, nfsMetricLookups,
+    nfsMetricReadBytes, nfsMetricWriteBytes])
     .enter().insert("div", ".bottom")
     .attr("class", "horizon")
     .call(horizon);
@@ -240,12 +246,30 @@ RecipeWidget = RockStorWidgetView.extend({
 
   },
 
-  nfsMetricFn: function(nfsMetric) {
+  showTopShares: function(recipe_uri) {
+    var _this = this;
+    this.topSharesIntervalId = window.setInterval(function() {
+      return function() { 
+        $.ajax({
+          url: recipe_uri + '?top_shares',
+          type: 'GET',
+          dataType: "json",
+          success: function(data, textStatus, jqXHR) {
+            _this.$('#nfs-shares').html(_this.top_shares_template({
+              sharelist: data
+            }));
+          },
+          error: function(jqXHR, textStatus, error) {
+            window.clearInterval(_this.topSharesIntervalId);
+            logger.debug(error);
+            // TODO show error message on widget
+          }
+        });
+      }
+    }(), 5000);
+
 
   }
-
-
-
 
 
 });
@@ -260,8 +284,6 @@ cubism.context.prototype.nfs = function(recipe_uri) {
         url: recipe_uri + '?t=' + this.timestamp,
         type: 'GET',
         success: function(data, textStatus, jqXHR) {
-          logger.debug('received data ');
-          logger.debug(data);
           callback(null, data);
 
         },

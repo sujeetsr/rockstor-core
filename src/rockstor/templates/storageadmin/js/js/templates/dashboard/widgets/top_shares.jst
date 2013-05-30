@@ -1,0 +1,10 @@
+<span class="nfs-sharelist-title">Top Shares by IO</span>
+<table id="nfs-share-list" class="table table-condensed table-bordered table-hover table-striped">
+  <% _.each(sharelist, function(share) { %>
+    <tr class="nfs-share-item">
+      <td><a href="#" class="nfs-share-item-name"><%= share.name %></a></td>
+      <td><span class="nfs-share-item-iops">IOPS: <%= share.iops %></span></td>
+    </li>
+  <% }); %>
+</table>
+
