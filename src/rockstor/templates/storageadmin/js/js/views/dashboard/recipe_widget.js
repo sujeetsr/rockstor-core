@@ -225,12 +225,12 @@ RecipeWidget = RockStorWidgetView.extend({
     .attr("class", "rule")
     .call(context.rule());
     
-    var nfsContext = context.nfs(recipe_uri);
-    var nfsMetricRead = nfsContext.metric('Reads/sec');
-    var nfsMetricWrites = nfsContext.metric('Writes/sec');
-    var nfsMetricLookups = nfsContext.metric('Lookups/sec');
-    var nfsMetricReadBytes = nfsContext.metric('Bytes read/sec');
-    var nfsMetricWriteBytes = nfsContext.metric('Bytes written/sec');
+    var nfsContext = context.nfs();
+    var nfsMetricRead = nfsContext.metric('Reads/sec', recipe_uri);
+    var nfsMetricWrites = nfsContext.metric('Writes/sec', recipe_uri);
+    var nfsMetricLookups = nfsContext.metric('Lookups/sec', recipe_uri);
+    var nfsMetricReadBytes = nfsContext.metric('Bytes read/sec', recipe_uri);
+    var nfsMetricWriteBytes = nfsContext.metric('Bytes written/sec', recipe_uri);
 
     d3.select(this.el).select("#nfs-graph").selectAll(".horizon")
     .data([nfsMetricRead, nfsMetricWrites, nfsMetricLookups,
@@ -274,11 +274,11 @@ RecipeWidget = RockStorWidgetView.extend({
 
 });
 
-cubism.context.prototype.nfs = function(recipe_uri) {
+cubism.context.prototype.nfs = function() {
   var source = {},
       context = this;
 
-  source.metric = function(nfsMetric) {
+  source.metric = function(nfsMetric, recipe_uri) {
     return context.metric(function(start, stop, step, callback) {
       $.ajax({
         url: recipe_uri + '?t=' + this.timestamp,
