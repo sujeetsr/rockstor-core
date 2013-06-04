@@ -39,6 +39,8 @@ RecipeWidget = RockStorWidgetView.extend({
     this.template = window.JST.dashboard_widgets_recipe;
     this.top_shares_template = window.JST.dashboard_widgets_top_shares;
     this.displayName = this.options.displayName;
+    this.probeName = 'nfs-distrib';
+    this.probeUrl = '/api/sm/sprobes/';
     this.timestamp = 0;
     // periodically check status while polling for data is 
     // going on. this interval controls the frequence
@@ -46,7 +48,6 @@ RecipeWidget = RockStorWidgetView.extend({
     //this.nfsData = [[[1,10],[2,10], [3,10], [4,10], [5,10], [6,10],
       //[7,10], [8,10], [9,10], [10,10]]];
     this.nfsData = [0,0,0,0,0,0,0,0,0,0];
-
 		this.graphOptions = {
 			lines: { show: true },
 			points: { show: true },
@@ -93,33 +94,43 @@ RecipeWidget = RockStorWidgetView.extend({
       event.preventDefault();
     }
     $.ajax({
-      url: '/api/recipes/nfs/start',
+      url: this.probeUrl + this.probeName + '/',
       type: 'POST',
       data: {},
       dataType: "json",
       success: function(data, textStatus, jqXHR) {
         logger.debug('started recipe');
-        _this.$('#recipestatus').html('Recipe started - getting status');
-        _this.waitTillRunning(data.recipe_uri);
+        logger.debug(data);
+        _this.probeId = data.id;
+        if (data.state == 'created') {
+          _this.$('#recipestatus').html('Recipe started - getting status');
+          _this.waitTillRunning();
+        } else {
+          _this.$('#recipestatus').html('<span class="error">Error while starting probe</span>');
+        }
+
       },
       error: function(jqXHR, textStatus, error) {
         logger.debug(error);
+        _this.$('#recipestatus').html('<span class="error">Error while starting probe</span>');
       }
     });
 
   },
 
-  waitTillRunning: function(recipe_uri) {
+  waitTillRunning: function() {
     var _this = this;
     logger.debug('polling till running');
     this.statusIntervalId = window.setInterval(function() {
       return function() { 
         $.ajax({
-          url: recipe_uri + '?status',
-          type: 'GET',
+          url: _this.probeUrl + _this.probeName + '/' + _this.probeId + '/status/',
+          type: 'POST',
           dataType: "json",
           success: function(data, textStatus, jqXHR) {
-            if (data.recipe_status == 'running') {
+            logger.debug('got probe status');
+            logger.debug(data);
+            if (data.state == 'running') {
               _this.$('#recipestatus').html('Recipe running - getting data');
               // stop polling for status
               window.clearInterval(_this.statusIntervalId);
@@ -127,14 +138,17 @@ RecipeWidget = RockStorWidgetView.extend({
               // start polling for Data
               logger.debug('recipe running');
               _this.pollForData(recipe_uri);
-            } else {
-
+            } else if (data.state == 'error' || data.state == 'stopped') {
+              window.clearInterval(_this.statusIntervalId);
+              logger.debug('probe error');
+              _this.$('#recipestatus').html('<span class="error">Error! Probe did not start</span>');
+              
             }
           },
           error: function(jqXHR, textStatus, error) {
             window.clearInterval(_this.statusIntervalId);
             logger.debug(error);
-            // TODO show error message on widget
+            _this.$('#recipestatus').html('<span class="error">Error! Probe did not start</span>');
           }
         });
       }
@@ -172,6 +186,7 @@ RecipeWidget = RockStorWidgetView.extend({
           error: function(jqXHR, textStatus, error) {
             window.clearInterval(_this.dataIntervalId);
             logger.debug(error);
+            _this.$('#recipestatus').html('<span class="error">Error while getting probe data</span>');
             // TODO show error message on widget
           }
         });
@@ -186,6 +201,19 @@ RecipeWidget = RockStorWidgetView.extend({
     if (!_.isUndefined(event)) {
       event.preventDefault();
     }
+    $.ajax({
+      url: this.probeUrl + this.probeName + '/' + this.probeId + '/stop/',
+      type: 'POST',
+      data: {},
+      dataType: "json",
+      success: function(data, textStatus, jqXHR) {
+        logger.debug('stopped recipe');
+        logger.debug(data);
+      },
+      error: function(jqXHR, textStatus, error) {
+        logger.debug(error);
+      }
+    });
     if (!_.isUndefined(this.dataIntervalId) && !_.isNull(this.dataIntervalId)) {
       window.clearInterval(this.dataIntervalId);
       this.$('#recipestatus').html('Recipe stopped ');
@@ -268,9 +296,7 @@ RecipeWidget = RockStorWidgetView.extend({
       }
     }(), 5000);
 
-
   }
-
 
 });
 
@@ -312,6 +338,7 @@ cubism.context.prototype.nfs = function() {
 
   return source;
 };
+
 
 RockStorWidgets.available_widgets.push({ 
   name: 'nfs_recipe', 

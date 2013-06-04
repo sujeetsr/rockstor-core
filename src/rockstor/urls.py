@@ -23,7 +23,8 @@ from storageadmin.views import (DiskView, SystemDiskView, PoolView, ShareView,
                                 UserView, ShareSambaView, SupportView,
                                 DashboardConfigView, ShareNFSView,
                                 RecipeView)
-from smart_manager.views import (SmartManagerView, ServiceView, StapView)
+from smart_manager.views import (SmartManagerView, ServiceView, SProbeView,
+                                 SProbeView2)
 
 import os.path
 import socketio.sdjango
@@ -111,11 +112,8 @@ urlpatterns = patterns('',
     url(r'^api/users/(?P<id>\d+)$', UserView.as_view(), name='user-view'),
     url(r'^api/users/$', UserView.as_view(), name='user-view'),
 
-    url(r'^api/sm/services/$', ServiceView.as_view(), name='service-view'),
-    url(r'^api/sm/services/(?P<sname>[A-Za-z_]+)/$', ServiceView.as_view(), name='service-view'),
-    url(r'^api/sm/stap/$', StapView.as_view(), name='stap-view'),
-    url(r'^api/sm/stap/(?P<tname>[A-Za-z0-9_]+)/$', StapView.as_view(), name='stap-view'),
-    url(r'^api/sm/(?P<mname>[A-Za-z0-9_]+)/$', SmartManagerView.as_view(), name='sm-view'),
+
+
     url(r'^api/support/$', SupportView.as_view(), name='support-view'),
     url(r'^api/support/(?P<caseid>[0-9]+)/$', SupportView.as_view(), name='support-view'),
 
@@ -125,5 +123,22 @@ urlpatterns = patterns('',
     # Recipes
     url(r'^api/recipes/nfs/start$', RecipeView.as_view(), name='recipe-view'),
     url(r'^api/recipes/nfs/(?P<recipe_id>[0-9]+)$', RecipeView.as_view(), name='recipe-view'),
+
+    # Smart manager stuff
+    # Services
+    url(r'^api/sm/services/$', ServiceView.as_view(), name='service-view'),
+    url(r'^api/sm/services/(?P<sname>[A-Za-z_]+)/$', ServiceView.as_view(),
+        name='service-view'),
+
+    # Smart probes
+    url(r'^api/sm/sprobes/$', SProbeView.as_view(), name='probe-view'),
+    url(r'^api/sm/sprobes/(?P<pname>[a-z-]+)/$',
+        SProbeView.as_view(), name='probe-view'),
+    url(r'^api/sm/sprobes/(?P<pname>[a-z-]+)/(?P<pid>[0-9]+)/$',
+        SProbeView2.as_view(), name='probe-view2'),
+    url(r'^api/sm/sprobes/(?P<pname>[a-z-]+)/(?P<pid>[0-9]+)/(?P<command>[a-z]+)/$',
+        SProbeView2.as_view(), name='probe-view2'),
+    url(r'^api/sm/(?P<mname>[A-Za-z0-9_]+)/$', SmartManagerView.as_view(),
+        name='sm-view'),
 
 )

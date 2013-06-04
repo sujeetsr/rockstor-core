@@ -15,7 +15,15 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
-from sm import SmartManagerView
-from service import ServiceView
-from sprobes import SProbeView
-from sprobes2 import SProbeView2
+
+from cpu_metric import CPUMetric
+from disk_stat import DiskStat
+from load_avg import LoadAvg
+from mem_info import MemInfo
+from vm_stat import VmStat
+from service import (Service, ServiceStatus)
+from sprobe import SProbe
+from nfsd import (NFSDCallDistribution,
+                  NFSDClientDistribution)
+
+

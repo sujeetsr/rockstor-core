@@ -15,7 +15,24 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
-from sm import SmartManagerView
-from service import ServiceView
-from sprobes import SProbeView
-from sprobes2 import SProbeView2
+
+from django.db import models
+
+
+class Service(models.Model):
+
+    name = models.CharField(max_length=24, unique=True)
+    registered = models.BooleanField(default=False)
+
+    class Meta:
+        app_label = 'smart_manager'
+
+
+class ServiceStatus(models.Model):
+
+    service = models.ForeignKey(Service)
+    status = models.BooleanField(default=False)
+    ts = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = 'smart_manager'
