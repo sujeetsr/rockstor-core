@@ -27,8 +27,8 @@
 RecipeWidget = RockStorWidgetView.extend({
 
   events: {
-    'click .start-recipe' : 'start',
-    'click .stop-recipe' : 'stop',
+    'click .start-recipe' : 'startProbe',
+    'click .stop-recipe' : 'stopProbe',
     'click .resize-widget': 'resize',
     'click .close-widget': 'close',
 
@@ -39,8 +39,6 @@ RecipeWidget = RockStorWidgetView.extend({
     this.template = window.JST.dashboard_widgets_recipe;
     this.top_shares_template = window.JST.dashboard_widgets_top_shares;
     this.displayName = this.options.displayName;
-    this.probeName = 'nfs-distrib';
-    this.probeUrl = '/api/sm/sprobes/';
     this.timestamp = 0;
     // periodically check status while polling for data is 
     // going on. this interval controls the frequence
@@ -71,6 +69,25 @@ RecipeWidget = RockStorWidgetView.extend({
       { name: 'Bytes written/sec', min: 700000, max: 800000 }
     ]; 
     */
+    this.probeStates = {
+      STOPPED: 'stopped',
+      CREATED: 'created',
+      RUNNING: 'running',
+      ERROR: 'error',
+    };
+    this.probeEvents = {
+      START: 'start',
+      RUN: 'run',
+      STOP: 'stop',
+      ERROR: 'error',
+      ERROR_START: 'error_start',
+      ERROR_RUN: 'error_run',
+    };
+    // time between successive ajax calls for state changes 
+    this.statePollInterval = 5000;
+    // time between successive ajax calls for probe data
+    this.dataPollInterval = 2000;
+    this.renderTimers = [];
   },
 
   render: function() {
@@ -84,38 +101,69 @@ RecipeWidget = RockStorWidgetView.extend({
     for (i=0; i<10; i++) {
       series[0].push([i, this.nfsData[i]]);
     }
+
     //$.plot(this.$('#nfsgraph'), this.makeSeries(this.nfsData), this.graphOptions);
+    this.initializeProbe('nfs-distrib');
     return this;
   },
 
-  start: function(event) {
+  initializeProbe: function(name) {
+    var _this = this;
+    // check probe status
+    this.probes = new ProbeCollection([],{name: name});
+    logger.debug('probes url is ' + this.probes.url());
+    this.probes.fetch({
+      success: function(collection, response, options) {
+        if (collection.length > 0) {
+          _this.probe = _this.probes.at(0);
+          console.log(_this.probe);
+          console.log(_this.probe.get('state'));
+          if (_this.probe.get('state') == _this.probeStates.RUNNING) {
+            // probe was run before and is running
+            _this.setProbeEvents(_this.probe);
+            _this.probe.trigger(_this.probeEvents.RUN);
+          } else {
+            // probe was run before but is not running
+            _this.probe = _this.createNewProbe(name);
+            _this.probe.trigger(_this.probeEvents.STOP);
+          }
+        } else {
+          // probe was not run before
+          _this.probe = _this.createNewProbe(name);
+          _this.probe.trigger(_this.probeEvents.STOP);
+        }
+      },
+      error: function(collection, response, options) {
+        // probe was not run before
+        _this.probe = _this.createNewProbe(name);
+        _this.probe.trigger(_this.probeEvents.STOP);
+      }
+
+    });
+  },
+  
+  startProbe: function(event) {
     var _this = this;
     if (!_.isUndefined(event)) {
       event.preventDefault();
     }
-    $.ajax({
-      url: this.probeUrl + this.probeName + '/',
-      type: 'POST',
-      data: {},
-      dataType: "json",
-      success: function(data, textStatus, jqXHR) {
-        logger.debug('started recipe');
-        logger.debug(data);
-        _this.probeId = data.id;
-        if (data.state == 'created') {
-          _this.$('#recipestatus').html('Recipe started - getting status');
-          _this.waitTillRunning();
+    logger.debug('in startProbe');
+    this.probe.save(null, {
+      success: function(model, response, options) {
+        logger.debug('probe create success');
+        logger.debug(_this.probe.get('state'));
+        if (_this.probe.get('state') == _this.probeStates.CREATED) {
+          _this.probe.trigger(_this.probeEvents.START);
         } else {
-          _this.$('#recipestatus').html('<span class="error">Error while starting probe</span>');
+          _this.probe.trigger(_this.probeEvents.ERROR_START);
         }
-
       },
-      error: function(jqXHR, textStatus, error) {
-        logger.debug(error);
-        _this.$('#recipestatus').html('<span class="error">Error while starting probe</span>');
+      error: function(model, response, options) {
+        logger.debug('probe create error');
+        logger.debug(_this.probe.get('state'));
+        _this.probe.trigger(_this.probeEvents.ERROR_START);
       }
     });
-
   },
 
   waitTillRunning: function() {
@@ -123,101 +171,96 @@ RecipeWidget = RockStorWidgetView.extend({
     logger.debug('polling till running');
     this.statusIntervalId = window.setInterval(function() {
       return function() { 
-        $.ajax({
-          url: _this.probeUrl + _this.probeName + '/' + _this.probeId + '/status/',
-          type: 'POST',
-          dataType: "json",
-          success: function(data, textStatus, jqXHR) {
-            logger.debug('got probe status');
-            logger.debug(data);
-            if (data.state == 'running') {
-              _this.$('#recipestatus').html('Recipe running - getting data');
+        _this.probe.fetch({
+          success: function(model, response, options) {
+            logger.debug('in waitTillRunning - probe state is ' + _this.probe.get('state'));
+            if (_this.probe.get('state') == _this.probeStates.RUNNING) {
               // stop polling for status
               window.clearInterval(_this.statusIntervalId);
-              // TODO show message - "recipe started, polling for data"
-              // start polling for Data
-              logger.debug('recipe running');
-              _this.pollForData(recipe_uri);
-            } else if (data.state == 'error' || data.state == 'stopped') {
+              // go to running state
+              _this.probe.trigger(_this.probeEvents.RUN);
+            } else if (_this.probe.get('state') == _this.probeStates.ERROR) {
+              // stop polling for status
               window.clearInterval(_this.statusIntervalId);
-              logger.debug('probe error');
-              _this.$('#recipestatus').html('<span class="error">Error! Probe did not start</span>');
-              
+              // go to error state
+              _this.probe.trigger(_this.probeEvents.ERROR);
             }
+
           },
-          error: function(jqXHR, textStatus, error) {
+          error: function(model, response, options) {
+            // stop polling for status
             window.clearInterval(_this.statusIntervalId);
-            logger.debug(error);
-            _this.$('#recipestatus').html('<span class="error">Error! Probe did not start</span>');
+            // go to error state
+            _this.probe.trigger(_this.probeEvents.ERROR);
           }
+
         });
       }
-    }(), 5000)
+    }(), this.statePollInterval)
 
   },
 
-  pollForData: function(recipe_uri) {
+  // poll till data is available
+  pollForDataReady: function(recipe_uri) {
     var _this = this;
     logger.debug('starting polling for data');
     this.dataIntervalId = window.setInterval(function() {
       return function() { 
+        _this.probe.fetch({
+          success: function(model, response, options) {
+            window.clearInterval(_this.dataIntervalId);
+            _this.startRender();
+          },
+          error: function(model, response, options) {
+            window.clearInterval(_this.dataIntervalId);
+            _this.probe.trigger(_this.probeEvents.ERROR);
+          },
+        });
         $.ajax({
-          url: recipe_uri + '?t=' + this.timestamp,
+          url: '/api/recipes/nfs/123?t=' + this.timestamp,
           type: 'GET',
           success: function(data, textStatus, jqXHR) {
             _this.$('#recipestatus').html('Recipe running ');
+            // data is ready, clear timer
             window.clearInterval(_this.dataIntervalId);
-            /*
-            logger.debug('received data ');
-            logger.debug(data);
-             
-            _this.nfsData = _this.nfsData.slice(1);
-            _this.nfsData.push(data.value);
-            $.plot('#nfsgraph', _this.makeSeries(_this.nfsData), _this.graphOptions);
-            */
-            // TODO update timestamp from data
-            // _this.timestamp = new timestamp from data
-            
-            /* Draw graph */
-            _this.showNfsIO(recipe_uri);
-            _this.showTopShares(recipe_uri);
+            _this.startRender();
+            _this.startRender();
             
           },
           error: function(jqXHR, textStatus, error) {
-            window.clearInterval(_this.dataIntervalId);
             logger.debug(error);
-            _this.$('#recipestatus').html('<span class="error">Error while getting probe data</span>');
-            // TODO show error message on widget
+            window.clearInterval(_this.dataIntervalId);
+            _this.probe.trigger(_this.probeEvents.ERROR);
           }
         });
       
-      
       }
-    }(), 2000)
+    }(), this.dataPollInterval)
 
   },
 
-  stop: function(event) {
+  stopProbe: function(event) {
+    var _this = this;
     if (!_.isUndefined(event)) {
       event.preventDefault();
     }
+    if (!_.isUndefined(this.dataIntervalId) && !_.isNull(this.dataIntervalId)) {
+      window.clearInterval(this.dataIntervalId);
+    }
     $.ajax({
-      url: this.probeUrl + this.probeName + '/' + this.probeId + '/stop/',
+      url: this.probe.url() + '/stop/',
       type: 'POST',
       data: {},
       dataType: "json",
       success: function(data, textStatus, jqXHR) {
-        logger.debug('stopped recipe');
         logger.debug(data);
+        _this.probe.trigger(_this.probeEvents.STOP);
       },
       error: function(jqXHR, textStatus, error) {
         logger.debug(error);
+        _this.probe.trigger(_this.probeEvents.ERROR);
       }
     });
-    if (!_.isUndefined(this.dataIntervalId) && !_.isNull(this.dataIntervalId)) {
-      window.clearInterval(this.dataIntervalId);
-      this.$('#recipestatus').html('Recipe stopped ');
-    }
 
   },
 
@@ -230,13 +273,17 @@ RecipeWidget = RockStorWidgetView.extend({
   },
 
   showNfsIO: function(recipe_uri) {
+    var _this = this;
+    // clear rendering area
+    this.$('#nfs-graph').empty();
+
     // create context
-    var context = cubism.context()
+    this.cubism_context = cubism.context()
     .step(1e3)
     .size(600);
     
     // create horizon
-    var horizon = context.horizon()
+    this.horizon = this.cubism_context.horizon()
     .colors(['#08519c', '#bae4b3'])
     .height(60);
 
@@ -246,14 +293,14 @@ RecipeWidget = RockStorWidgetView.extend({
     .enter().append("div")
     .attr("class", function(d) { return d + " axis"; })
     .each(function(d) { 
-      d3.select(this).call(context.axis().ticks(12).orient(d)); 
+      d3.select(this).call(_this.cubism_context.axis().ticks(12).orient(d)); 
     });
 
     d3.select(this.el).select("#nfs-graph").append("div")
     .attr("class", "rule")
-    .call(context.rule());
+    .call(_this.cubism_context.rule());
     
-    var nfsContext = context.nfs();
+    var nfsContext = this.cubism_context.nfs();
     var nfsMetricRead = nfsContext.metric('Reads/sec', recipe_uri);
     var nfsMetricWrites = nfsContext.metric('Writes/sec', recipe_uri);
     var nfsMetricLookups = nfsContext.metric('Lookups/sec', recipe_uri);
@@ -265,10 +312,10 @@ RecipeWidget = RockStorWidgetView.extend({
     nfsMetricReadBytes, nfsMetricWriteBytes])
     .enter().insert("div", ".bottom")
     .attr("class", "horizon")
-    .call(horizon);
+    .call(_this.horizon);
 
-    context.on("focus", function(i) {
-      d3.selectAll(".value").style("right", i == null ? null : context.size() - i + "px");
+    this.cubism_context.on("focus", function(i) {
+      d3.selectAll(".value").style("right", i == null ? null : _this.cubism_context.size() - i + "px");
     });
 
 
@@ -296,9 +343,77 @@ RecipeWidget = RockStorWidgetView.extend({
       }
     }(), 5000);
 
+  },
+
+
+  start: function() {
+    logger.debug('probe created');
+    this.$('#recipestatus').html('Probe created - getting status');
+    this.waitTillRunning();
+  },
+  
+  run: function() {
+    logger.debug('probe running');
+    this.$('#recipestatus').html('Probe running - getting data');
+    // start polling for Data
+    this.pollForDataReady();
+
+  },
+
+  stop: function() {
+    logger.debug('probe stopped');
+    logger.debug(this.probe.id);
+    this.$('#recipestatus').html('Probe stopped');
+    if (!_.isUndefined(this.probe.id) && !_.isNull(this.probe.id)) {
+      this.stopRender();
+    }
+  },
+
+  error: function() {
+    logger.debug('probe error');
+    this.probeState = this.probeStates.ERROR;
+    this.$('#recipestatus').html('<span class="error">Error!</span>');
+  },
+
+  startRender: function() {
+    var probeDataUri = '/api/recipes/nfs/123';
+    this.showNfsIO(probeDataUri);
+    //this.showTopShares(probeDataUri);
+  },
+
+  stopRender: function() {
+    var _this = this;
+    d3.select(this.el).select("#nfs-graph").selectAll(".horizon")
+    .call(_this.horizon.remove);
+    window.clearInterval(this.topSharesIntervalId);
+
+  },
+
+  clear: function() {
+
+  },
+
+  setProbeEvents: function(probe) {
+    probe.on(this.probeEvents.START, this.start, this);
+    probe.on(this.probeEvents.RUN, this.run, this);
+    probe.on(this.probeEvents.STOP, this.stop, this);
+    probe.on(this.probeEvents.ERROR, this.error, this);
+    probe.on(this.probeEvents.ERROR_START, this.error, this);
+    probe.on(this.probeEvents.ERROR_RUN, this.error, this);
+  },
+
+  createNewProbe: function(name) {
+    probe = new Probe({
+      name: name,
+      state: this.probeStates.STOPPED
+    })
+    this.setProbeEvents(probe);
+    return probe;
   }
 
+
 });
+
 
 cubism.context.prototype.nfs = function() {
   var source = {},
@@ -307,7 +422,7 @@ cubism.context.prototype.nfs = function() {
   source.metric = function(nfsMetric, recipe_uri) {
     return context.metric(function(start, stop, step, callback) {
       $.ajax({
-        url: recipe_uri + '?t=' + this.timestamp,
+        url: '/api/recipes/nfs/123?t=' + this.timestamp,
         type: 'GET',
         success: function(data, textStatus, jqXHR) {
           callback(null, data);
