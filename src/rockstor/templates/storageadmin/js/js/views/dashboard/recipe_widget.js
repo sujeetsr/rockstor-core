@@ -454,7 +454,7 @@ cubism.context.prototype.nfs = function() {
         url: probeDataUrl,
         type: 'GET',
         success: function(data, textStatus, jqXHR) {
-          tmp = data.map(function(d) { return d[attrName]+30; });
+          tmp = data.map(function(d) { return d[attrName]; });
           callback(null, tmp);
         },
         error: function(jqXHR, textStatus, error) {
