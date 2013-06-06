@@ -164,8 +164,12 @@ var DashboardConfig = Backbone.Model.extend({
 var Probe = Backbone.Model.extend({ 
   urlRoot: function() {
       return '/api/sm/sprobes/' + this.get('name') + '/';    
+  },
+  dataUrl: function() {
+    return '/api/sm/sprobes/' + this.get('name') + '/' + this.id + '/data/';
   }
 });
+
 var ProbeCollection = Backbone.Collection.extend({
   model: Probe,
   initialize: function(models, options) {
@@ -176,13 +180,5 @@ var ProbeCollection = Backbone.Collection.extend({
   url: function() {
     return '/api/sm/sprobes/' + this.name + '/';    
   }
-});
-
-
-var ProbeData = Backbone.Model.extend({ 
-  url: function() {
-      return '/api/sm/sprobes/' + this.get('name') + '/' + this.id + '/';
-  }
-
 });
 

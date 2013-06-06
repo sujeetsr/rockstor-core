@@ -27,8 +27,8 @@
 RecipeWidget = RockStorWidgetView.extend({
 
   events: {
-    'click .start-recipe' : 'startProbe',
-    'click .stop-recipe' : 'stopProbe',
+    'click .start-probe' : 'startProbe',
+    'click .stop-probe' : 'stopProbe',
     'click .resize-widget': 'resize',
     'click .close-widget': 'close',
 
@@ -116,8 +116,6 @@ RecipeWidget = RockStorWidgetView.extend({
       success: function(collection, response, options) {
         if (collection.length > 0) {
           _this.probe = _this.probes.at(0);
-          console.log(_this.probe);
-          console.log(_this.probe.get('state'));
           if (_this.probe.get('state') == _this.probeStates.RUNNING) {
             // probe was run before and is running
             _this.setProbeEvents(_this.probe);
@@ -146,6 +144,9 @@ RecipeWidget = RockStorWidgetView.extend({
     var _this = this;
     if (!_.isUndefined(event)) {
       event.preventDefault();
+    }
+    if (buttonDisabled(this.$('.start-probe'))) {
+      return false;
     }
     logger.debug('in startProbe');
     this.probe.save(null, {
@@ -206,26 +207,15 @@ RecipeWidget = RockStorWidgetView.extend({
     logger.debug('starting polling for data');
     this.dataIntervalId = window.setInterval(function() {
       return function() { 
-        _this.probe.fetch({
-          success: function(model, response, options) {
-            window.clearInterval(_this.dataIntervalId);
-            _this.startRender();
-          },
-          error: function(model, response, options) {
-            window.clearInterval(_this.dataIntervalId);
-            _this.probe.trigger(_this.probeEvents.ERROR);
-          },
-        });
         $.ajax({
-          url: '/api/recipes/nfs/123?t=' + this.timestamp,
+          url: this.probe.dataUrl(),
           type: 'GET',
+          dataType: "json",
           success: function(data, textStatus, jqXHR) {
-            _this.$('#recipestatus').html('Recipe running ');
-            // data is ready, clear timer
-            window.clearInterval(_this.dataIntervalId);
-            _this.startRender();
-            _this.startRender();
-            
+            if (data.length > 0) {
+              window.clearInterval(_this.dataIntervalId);
+              _this.startRender();
+            }
           },
           error: function(jqXHR, textStatus, error) {
             logger.debug(error);
@@ -233,9 +223,19 @@ RecipeWidget = RockStorWidgetView.extend({
             _this.probe.trigger(_this.probeEvents.ERROR);
           }
         });
-      
+
+        //_this.probe.fetch({
+          //success: function(model, response, options) {
+            //window.clearInterval(_this.dataIntervalId);
+            //_this.startRender();
+          //},
+          //error: function(model, response, options) {
+            //window.clearInterval(_this.dataIntervalId);
+            //_this.probe.trigger(_this.probeEvents.ERROR);
+          //},
+        //});
       }
-    }(), this.dataPollInterval)
+    }(), this.dataPollInterval);
 
   },
 
@@ -243,6 +243,9 @@ RecipeWidget = RockStorWidgetView.extend({
     var _this = this;
     if (!_.isUndefined(event)) {
       event.preventDefault();
+    }
+    if (buttonDisabled(this.$('.stop-probe'))) {
+      return false;
     }
     if (!_.isUndefined(this.dataIntervalId) && !_.isNull(this.dataIntervalId)) {
       window.clearInterval(this.dataIntervalId);
@@ -253,7 +256,6 @@ RecipeWidget = RockStorWidgetView.extend({
       data: {},
       dataType: "json",
       success: function(data, textStatus, jqXHR) {
-        logger.debug(data);
         _this.probe.trigger(_this.probeEvents.STOP);
       },
       error: function(jqXHR, textStatus, error) {
@@ -272,8 +274,11 @@ RecipeWidget = RockStorWidgetView.extend({
     return series;
   },
 
-  showNfsIO: function(recipe_uri) {
+  showNfsIO: function(probeDataUrl) {
     var _this = this;
+    // set title
+    this.$('#nfs-title').html(this.probe.get('name'));
+
     // clear rendering area
     this.$('#nfs-graph').empty();
 
@@ -301,15 +306,14 @@ RecipeWidget = RockStorWidgetView.extend({
     .call(_this.cubism_context.rule());
     
     var nfsContext = this.cubism_context.nfs();
-    var nfsMetricRead = nfsContext.metric('Reads/sec', recipe_uri);
-    var nfsMetricWrites = nfsContext.metric('Writes/sec', recipe_uri);
-    var nfsMetricLookups = nfsContext.metric('Lookups/sec', recipe_uri);
-    var nfsMetricReadBytes = nfsContext.metric('Bytes read/sec', recipe_uri);
-    var nfsMetricWriteBytes = nfsContext.metric('Bytes written/sec', recipe_uri);
+    var nfsMetricRead = nfsContext.metric('Reads/sec', 'num_read', probeDataUrl);
+    var nfsMetricWrites = nfsContext.metric('Writes/sec', 'num_write', probeDataUrl);
+    //var nfsMetricLookups = nfsContext.metric('Lookups/sec', recipe_uri);
+    //var nfsMetricReadBytes = nfsContext.metric('Bytes read/sec', recipe_uri);
+    //var nfsMetricWriteBytes = nfsContext.metric('Bytes written/sec', recipe_uri);
 
     d3.select(this.el).select("#nfs-graph").selectAll(".horizon")
-    .data([nfsMetricRead, nfsMetricWrites, nfsMetricLookups,
-    nfsMetricReadBytes, nfsMetricWriteBytes])
+    .data([nfsMetricRead, nfsMetricWrites ])
     .enter().insert("div", ".bottom")
     .attr("class", "horizon")
     .call(_this.horizon);
@@ -348,13 +352,17 @@ RecipeWidget = RockStorWidgetView.extend({
 
   start: function() {
     logger.debug('probe created');
-    this.$('#recipestatus').html('Probe created - getting status');
+    this.disableStartProbe();
+    this.enableStopProbe();
+    this.$('#probe-status').html('<h3>Probe created - getting status</h3>');
     this.waitTillRunning();
   },
   
   run: function() {
     logger.debug('probe running');
-    this.$('#recipestatus').html('Probe running - getting data');
+    this.disableStartProbe();
+    this.enableStopProbe();
+    this.$('#probe-status').html('<h3>Probe running - getting data</h3>');
     // start polling for Data
     this.pollForDataReady();
 
@@ -362,8 +370,9 @@ RecipeWidget = RockStorWidgetView.extend({
 
   stop: function() {
     logger.debug('probe stopped');
-    logger.debug(this.probe.id);
-    this.$('#recipestatus').html('Probe stopped');
+    this.enableStartProbe();
+    this.disableStopProbe();
+    this.$('#probe-status').html('<h3>Probe stopped</h3>');
     if (!_.isUndefined(this.probe.id) && !_.isNull(this.probe.id)) {
       this.stopRender();
     }
@@ -371,20 +380,26 @@ RecipeWidget = RockStorWidgetView.extend({
 
   error: function() {
     logger.debug('probe error');
+    this.enableStartProbe();
+    this.disableStopProbe();
     this.probeState = this.probeStates.ERROR;
-    this.$('#recipestatus').html('<span class="error">Error!</span>');
+    this.$('#probe-status').html('<h3>Error!</h3>');
   },
 
   startRender: function() {
-    var probeDataUri = '/api/recipes/nfs/123';
-    this.showNfsIO(probeDataUri);
+    //var probeDataUri = '/api/recipes/nfs/123';
+    this.showNfsIO(this.probe.dataUrl());
     //this.showTopShares(probeDataUri);
   },
 
   stopRender: function() {
     var _this = this;
-    d3.select(this.el).select("#nfs-graph").selectAll(".horizon")
-    .call(_this.horizon.remove);
+    if (!_.isUndefined(this.horizon) && !_.isNull(this.horizon)) {
+      d3.select(this.el).select("#nfs-graph").selectAll(".horizon")
+      .call(_this.horizon.remove).remove();
+    }
+    d3.select(this.el).select("#nfs-graph").selectAll(".axis").remove();
+    this.cubism_context.stop();
     window.clearInterval(this.topSharesIntervalId);
 
   },
@@ -409,7 +424,20 @@ RecipeWidget = RockStorWidgetView.extend({
     })
     this.setProbeEvents(probe);
     return probe;
-  }
+  },
+
+  disableStartProbe: function() {
+    disableButton(this.$('.start-probe'));
+  },
+  enableStartProbe: function() {
+    enableButton(this.$('.start-probe'));
+  },
+  disableStopProbe: function() {
+    disableButton(this.$('.stop-probe'));
+  },
+  enableStopProbe: function() {
+    enableButton(this.$('.stop-probe'));
+  },
 
 
 });
@@ -419,14 +447,15 @@ cubism.context.prototype.nfs = function() {
   var source = {},
       context = this;
 
-  source.metric = function(nfsMetric, recipe_uri) {
+  source.metric = function(nfsMetric, attrName, probeDataUrl) {
     return context.metric(function(start, stop, step, callback) {
       $.ajax({
-        url: '/api/recipes/nfs/123?t=' + this.timestamp,
+        //url: '/api/recipes/nfs/123?t=' + this.timestamp,
+        url: probeDataUrl,
         type: 'GET',
         success: function(data, textStatus, jqXHR) {
-          callback(null, data);
-
+          tmp = data.map(function(d) { return d[attrName]+30; });
+          callback(null, tmp);
         },
         error: function(jqXHR, textStatus, error) {
           window.clearInterval(_this.dataIntervalId);
@@ -434,16 +463,6 @@ cubism.context.prototype.nfs = function() {
           // TODO show error message on widget
         }
       });
-      /*
-      d3.json(host + "/1.0/metric"
-          + "?expression=" + encodeURIComponent(expression)
-          + "&start=" + cubism_cubeFormatDate(start)
-          + "&stop=" + cubism_cubeFormatDate(stop)
-          + "&step=" + step, function(data) {
-        if (!data) return callback(new Error("unable to load data"));
-        callback(null, data.map(function(d) { return d.value; }));
-      });
-    */
     }, nfsMetric);
   };
 
