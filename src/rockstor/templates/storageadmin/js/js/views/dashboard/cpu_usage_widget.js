@@ -41,10 +41,12 @@ CpuUsageWidget = RockStorWidgetView.extend({
     this.graphOptions = { 
       grid : { hoverable : true },
 			series: {
-        stack: true,
+        stack: false,
         stackpercent : false,
+        /*
         bars: { show: true, barWidth: 0.4, fillColor: {colors:[{opacity: 1},{opacity: 1}]}, align: "center" },
-        lines: { show: false, fill: false },
+        */
+        lines: { show: true, fill: true },
         shadowSize: 0	// Drawing is faster without shadows
 			},
 			yaxis: { min: 0, max: 110 },
@@ -54,7 +56,7 @@ CpuUsageWidget = RockStorWidgetView.extend({
         min: 0, 
         max: 60 
         },
-      legend : { container : "#legends", noColumns : 3 },
+      legend : { container : "#legend", noColumns : 4 },
       tooltip: true,
       tooltipOpts: { content: "<b>%s</b> (%p.2%)" }
     };
