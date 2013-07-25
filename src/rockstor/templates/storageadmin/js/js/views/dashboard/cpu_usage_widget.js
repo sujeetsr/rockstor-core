@@ -39,26 +39,45 @@ CpuUsageWidget = RockStorWidgetView.extend({
     }
     this.updateInterval = 5000;
     this.graphOptions = { 
-      grid : { hoverable : true },
+      grid : { 
+        hoverable : true,
+        aboveData: true,
+        borderWidth: {
+          top: 1,
+          right: 1,
+          bottom: 0,
+          left: 0
+        },
+        borderColor: "#aaa"
+      },
 			series: {
-        stack: false,
+        stack: true,
         stackpercent : false,
         /*
         bars: { show: true, barWidth: 0.4, fillColor: {colors:[{opacity: 1},{opacity: 1}]}, align: "center" },
         */
-        lines: { show: true, fill: true },
+        lines: { show: true, fill: 0.9 },
         shadowSize: 0	// Drawing is faster without shadows
 			},
-			yaxis: { min: 0, max: 110 },
+			yaxis: { 
+        min: 0, 
+        max: 110,
+        tickFormatter: function(val, axis) { return val + "%"; }
+      },
       xaxis: {  
         tickFormatter: this.cpuTickFormatter,
         tickSize: 12,
         min: 0, 
         max: 60 
         },
-      legend : { container : "#legend", noColumns : 4 },
+      legend : { 
+        container : "#legend", 
+        noColumns : 4,
+        margin: [10,0],
+        labelBoxBorderColor: "#fff"
+      },
       tooltip: true,
-      tooltipOpts: { content: "<b>%s</b> (%p.2%)" }
+      tooltipOpts: { content: "<b>%s</b> (%y.2%)" }
     };
     this.prev_cpu_data = null;
   },
