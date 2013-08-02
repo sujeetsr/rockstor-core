@@ -1101,3 +1101,13 @@ path.link {
   padding: 20px;
 }
 
+#nfs-share-client-graph rect {
+  stroke: #eee;
+  fill: #aaa;
+  fill-opacity: .8;
+}
+
+#nfs-share-client-graph rect.parent {
+  cursor: pointer;
+  fill: steelblue;
+}
