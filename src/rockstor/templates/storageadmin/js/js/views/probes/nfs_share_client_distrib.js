@@ -32,7 +32,7 @@ NfsShareClientDistribView = Backbone.View.extend({
 
     this.m = [20, 100, 20, 20]; 
     this.w = 400 - this.m[1] - this.m[3],
-    this.h = 400 - this.m[0] - this.m[2];
+    this.h = 250 - this.m[0] - this.m[2];
 
     this.d3tree = d3.layout.tree().size([this.h, this.w]);
 
@@ -483,40 +483,44 @@ NfsShareClientDistribView = Backbone.View.extend({
       return d.id;
     });
     
-    clientNode.enter().append("svg:g")
+    var clientNodeEnter = clientNode.enter().append("svg:g")
     .attr("class", "clientNode")
-    .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-    .append("svg:image")
+    .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; });
+
+    clientNodeEnter.append("svg:image")
     .attr("xlink:href", "/img/computer.png")
-    .attr("width", "22")
-    .attr("height", "22");
+    .attr("width", "20")
+    .attr("height", "20")
+    .attr("transform", function(d) { return "translate(0,-5)"});
     
+    clientNodeEnter.append("svg:text")
+    .attr("class","nodeLabel")
+    .attr("x", 25)
+    .attr("dy", ".35em")
+    .attr("text-anchor", "start")
+    .text(function(d) { return d.name; })
+    .style("fill-opacity", 1e-6);
+
     var shareNode = this.vis.selectAll("g.shareNode")
     .data(shareNodes, function(d,i) {
       return d.id;
     });
     
-    shareNode.enter().append("svg:g")
+    var shareNodeEnter = shareNode.enter().append("svg:g")
     .attr("class", "shareNode")
-    .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-    .append("svg:circle")
+    .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; });
+    
+    shareNodeEnter.append("svg:circle")
     .attr("r", 1e-6)
     .style("fill", "lightsteelblue");
     
-
-    //nodeEnter.append("svg:circle")
-    //.attr("r", 1e-6)
-    //.style("fill", function(d) { 
-    //  if (!_.isNull(_this.selectedNode) && 
-    //  _this.selectedNode.name == d.name) {
-    //    return "#DEFAA5"
-    //  } else {
-    //    return d._children ? "lightsteelblue" : "#fff"; 
-    //  }
-    //})
-    //.on("click", function(d) { 
-    //  _this.setSelectedNode(d.name);
-    //});
+    shareNodeEnter.append("svg:text")
+    .attr("class","nodeLabel")
+    .attr("x", 20)
+    .attr("dy", ".35em")
+    .attr("text-anchor", "start")
+    .text(function(d) { return d.name; })
+    .style("fill-opacity", 1e-6);
 
 //
 //    nodeEnter.append("svg:text")
@@ -554,11 +558,17 @@ NfsShareClientDistribView = Backbone.View.extend({
       return "translate(" + d.y + "," + d.x + ")"; 
     });
 
+    clientNodeUpdate.select("text.nodeLabel")
+    .style("fill-opacity", 1);
+
     var shareNodeUpdate = shareNode.transition()
     .duration(duration)
     .attr("transform", function(d) { 
       return "translate(" + d.y + "," + d.x + ")"; 
     });
+
+    shareNodeUpdate.select("text.nodeLabel")
+    .style("fill-opacity", 1);
 
     shareNodeUpdate.select("circle")
     .attr("r", 10);
