@@ -10,13 +10,13 @@
   
     <div id="nfs-share-client-msg">
       <h4>Select root</h4>
-      <input type="radio" name="selectedRoot" checked value="Clients">Clients</input>
-      <input type="radio" name="selectedRoot" value="Shares">Shares</input>
+      <input type="radio" name="selectedRoot" checked value="client">Clients</input>
+      <input type="radio" name="selectedRoot" value="share">Shares</input>
       <br>
       <h4>Select attribute:</h4> 
-      <input type="radio" name="selectedAttr" checked value="num_read">num_read</input><br>
-      <input type="radio" name="selectedAttr" value="num_write">num_write</input><br>
-      <input type="radio" name="selectedAttr" value="num_lookup">num_lookup</input>
+      <input type="checkbox" id="selNumRead" class="selectedAttr" checked value="num_read">num_read</input><br>
+      <input type="checkbox" id="selNumWrite" class="selectedAttr" value="num_write">num_write</input><br>
+      <input type="checkbox" id="selNumLookup" class="selectedAttr" value="num_lookup">num_lookup</input>
 
     </div>
 

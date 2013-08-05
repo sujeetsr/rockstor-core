@@ -1078,6 +1078,9 @@ table#disk-utilization-table thead tr .headerSortDown {
 .clientNode text, .shareNode text {
   font-size: 11px;
 }
+.clientNode text.selectedNode, .shareNode text.selectedNode {
+  stroke: "red";
+}
 
 path.link {
   fill: none;
