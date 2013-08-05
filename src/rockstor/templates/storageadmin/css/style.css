@@ -1066,16 +1066,17 @@ table#disk-utilization-table thead tr .headerSortDown {
 }
 
 /* nfs client share */
-.node circle {
+.clientNode, .shareNode {
   cursor: pointer;
-  fill: #fff;
+}
+
+.clientNode circle {
   stroke: steelblue;
   stroke-width: 1.5px;
 }
 
-.node text {
+.clientNode text, .shareNode text {
   font-size: 11px;
-  cursor: pointer;
 }
 
 path.link {
@@ -1092,12 +1093,14 @@ path.link {
     margin: 0px 4px 0px 0px;
 }
 
-#selected-node-detail {
+#nfs-share-client-left {
+  width: 300px;
+}
+
+#nfs-share-client-right {
   font-size: 12px;
-  margin-top: 50px;
   margin-left: 20px;
   width: 180px;
-  min-height: 200px;
   padding: 20px;
 }
 

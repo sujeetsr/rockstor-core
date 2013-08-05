@@ -32,7 +32,7 @@ NfsShareClientDistribView = Backbone.View.extend({
 
     this.m = [20, 100, 20, 20]; 
     this.w = 400 - this.m[1] - this.m[3],
-    this.h = 250 - this.m[0] - this.m[2];
+    this.h = 350 - this.m[0] - this.m[2];
 
     this.d3tree = d3.layout.tree().size([this.h, this.w]);
 
@@ -77,12 +77,14 @@ NfsShareClientDistribView = Backbone.View.extend({
     .append("svg:g")
     .attr("transform", "translate(" + this.m[3] + "," + this.m[0] + ")");
 
-    var data = this.generateData();
-    //var filteredData = this.filterData(data, "client", "num_read", this.numTop);
-    //console.log(filteredData);
-    this.root = this.createTree(data, "client", this.nfsAttrs);
-    console.log(this.root);
-    this.displayTree(this.root);
+    this.renderIntervalId = window.setInterval(function() {
+      var data = _this.generateData();
+      //var filteredData = this.filterData(data, "client", "num_read", this.numTop);
+      //console.log(filteredData);
+      _this.root = _this.createTree(data, "client", _this.nfsAttrs);
+      console.log(_this.root);
+      _this.displayTree(_this.root);
+    }, 5000);
 
     /*
     this.renderIntervalId = window.setInterval(function() {
@@ -141,80 +143,10 @@ NfsShareClientDistribView = Backbone.View.extend({
 
     */
 
-
-
-    
-/* // partition layout
-    var x = d3.scale.linear().range([0, this.w]),
-    y = d3.scale.linear().range([0, this.h]);
-
-    
-    this.vis = d3.select(this.el).select("#nfs-share-client-graph")
-    .append("svg:svg")
-    .attr("width", this.w)
-    .attr("height", this.h);
-
-    var partition = d3.layout.partition()
-    .value(function(d) { return d.num_read; });
-
-    var g = this.vis.selectAll("g")
-    .data(partition.nodes(this.root))
-    .enter().append("svg:g")
-    .attr("transform", function(d) { 
-      return "translate(" + x(d.y) + "," + y(d.x) + ")"; 
-    })
-    .on("click", _this.click);
-    
-    this.kx = this.w / this.root.dx; 
-    this.ky = this.h / 1;
-
-    g.append("svg:rect")
-    .attr("width", _this.root.dy * _this.kx)
-    .attr("height", function(d) { return d.dx * _this.ky; })
-    .attr("class", function(d) { return d.children ? "parent" : "child"; });
-
-    g.append("svg:text")
-    .attr("transform", function(d) {
-      return "translate(8," + d.dx * _this.ky / 2 + ")";
-    })
-    .attr("dy", ".35em")
-    .style("opacity", function(d) { return d.dx * _this.ky > 12 ? 1 : 0; })
-    .text(function(d) { return d.name; })
-
-    d3.select(window)
-    .on("click", function() { _this.click(_this.root); });
-    
-*/
-
     return this;
   },
 
-  click: function(d) {
-    if (!d.children) return;
 
-    kx = (d.y ? w - 40 : w) / (1 - d.y);
-    ky = h / d.dx;
-    x.domain([d.y, 1]).range([d.y ? 40 : 0, w]);
-    y.domain([d.x, d.x + d.dx]);
-
-    var t = g.transition()
-    .duration(d3.event.altKey ? 7500 : 750)
-    .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; });
-
-    t.select("rect")
-    .attr("width", d.dy * kx)
-    .attr("height", function(d) { return d.dx * ky; });
-
-    t.select("text")
-    .attr("transform", transform)
-    .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; });
-
-    d3.event.stopPropagation();
-  },
-
-  transform: function(d) {
-    return "translate(8," + d.dx * ky / 2 + ")";
-  },
 
   cleanup: function() {
     if (!_.isUndefined(this.renderIntervalId) && 
@@ -264,8 +196,8 @@ NfsShareClientDistribView = Backbone.View.extend({
     var node = this.findNodeWithName(nodeList, name);
     if (_.isUndefined(node)) {
       node = this.createNode(nodeType, d, attrList);
+      nodeList.push(node);
     }
-    nodeList.push(node);
     return node;
   },
 
@@ -297,17 +229,38 @@ NfsShareClientDistribView = Backbone.View.extend({
 
   generateData: function() {
     var data = [];
-    for (i=0; i<3; i++) {
-      var ipRandom = '10.0.0.' + (1 + Math.floor(Math.random()*10));
-      var shareRandom = 'share_' + (1 + Math.floor(Math.random()*9));
-      data.push({
-        share: shareRandom,
-        client: ipRandom,
-        num_read: 5 + Math.floor(Math.random() * 5),
-        num_write: 1 + Math.floor(Math.random() * 5),
-        num_lookup: 1 + Math.floor(Math.random() * 5),
-      });
+    for (i=1; i<=3; i++) {
+      var ip = "10.0.0." + i;
+      for (j=1; j<=2; j++) {
+        var share = "share_" + j;
+        data.push({
+          share: share,
+          client: ip,
+          num_read: 5 + Math.floor(Math.random() * 5),
+          num_write: 1 + Math.floor(Math.random() * 5),
+          num_lookup: 1 + Math.floor(Math.random() * 5),
+        });
+      }
     }
+    var ipRandom1 = "10.0.0." + 5 + Math.floor(Math.random() * 5);
+    var share1 = "share_1";
+    var ipRandom2 = "10.0.0." + 10 + Math.floor(Math.random() * 5);
+    var share1 = "share_1";
+    var share2 = "share_2";
+    data.push({
+      share: share1,
+      client: ipRandom1,
+      num_read: 5 + Math.floor(Math.random() * 5),
+      num_write: 1 + Math.floor(Math.random() * 5),
+      num_lookup: 1 + Math.floor(Math.random() * 5),
+    });
+    data.push({
+      share: share2,
+      client: ipRandom2,
+      num_read: 5 + Math.floor(Math.random() * 5),
+      num_write: 1 + Math.floor(Math.random() * 5),
+      num_lookup: 1 + Math.floor(Math.random() * 5),
+    });
     return data;
   },
 
@@ -354,14 +307,6 @@ NfsShareClientDistribView = Backbone.View.extend({
           return x.shareName == d.share;
         });
         if (_.isUndefined(s)) {
-          //s = {
-            //clientName: c.name,
-            //shareName: d.share,
-            //label: d.share,
-            //name: c.name + "_" + d.share,
-            //displayName: d.share,
-            //type: 'share',
-          //}
           s = _this.createNode("share", d, _this.nfsAttrs, c);
           c.children.push(s);
         }
@@ -473,7 +418,13 @@ NfsShareClientDistribView = Backbone.View.extend({
     var clientNodes = nodes.filter(function(d,i) {
       return d.type == "client";
     });
-    console.log(clientNodes);
+    var offset = 0;
+    if (clientNodes.length > 0) {
+      offset = -(clientNodes[0].y);
+      this.vis.attr("transform", "translate(" + offset + ",0)");
+      this.selectedNode = clientNodes[0];
+      this.updateDetail(this.selectedNode);
+    }
     var shareNodes = nodes.filter(function(d,i) {
       return d.type == "share";
     });
@@ -485,7 +436,9 @@ NfsShareClientDistribView = Backbone.View.extend({
     
     var clientNodeEnter = clientNode.enter().append("svg:g")
     .attr("class", "clientNode")
-    .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; });
+    .attr("transform", function(d) { 
+      return "translate(" + source.y0 + "," + source.x0 + ")"; 
+    });
 
     clientNodeEnter.append("svg:image")
     .attr("xlink:href", "/img/computer.png")
@@ -495,7 +448,7 @@ NfsShareClientDistribView = Backbone.View.extend({
     
     clientNodeEnter.append("svg:text")
     .attr("class","nodeLabel")
-    .attr("x", 25)
+    .attr("y", 25)
     .attr("dy", ".35em")
     .attr("text-anchor", "start")
     .text(function(d) { return d.name; })
@@ -510,46 +463,23 @@ NfsShareClientDistribView = Backbone.View.extend({
     .attr("class", "shareNode")
     .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; });
     
-    shareNodeEnter.append("svg:circle")
-    .attr("r", 1e-6)
-    .style("fill", "lightsteelblue");
+    shareNodeEnter.append("svg:image")
+    .attr("xlink:href", "/img/Closed_32x32x32.png")
+    .attr("width", "20")
+    .attr("height", "20")
+    .attr("transform", function(d) { return "translate(0,-10)"});
+
+    //shareNodeEnter.append("svg:circle")
+    //.attr("r", 1e-6)
+    //.style("fill", "lightsteelblue");
     
     shareNodeEnter.append("svg:text")
     .attr("class","nodeLabel")
-    .attr("x", 20)
+    .attr("x", 25)
     .attr("dy", ".35em")
     .attr("text-anchor", "start")
     .text(function(d) { return d.name; })
     .style("fill-opacity", 1e-6);
-
-//
-//    nodeEnter.append("svg:text")
-//    .attr("class","nodeLabel")
-//    .attr("x", 20)
-//    .attr("dy", ".35em")
-//    .attr("text-anchor", "start")
-//    .text(function(d) { 
-//      if (d.children) {
-//        return "- " + d.name;
-//      } else if (d._children) {
-//        return "+ " + d.name;
-//      } else {
-//        return d.name;
-//      }
-//    })
-//    .style("fill-opacity", 1e-6)
-//    .on("click", function(d) { _this.toggle(d); _this.update(d); });
-//
-//    nodeEnter.append("svg:text")
-//    .attr("class","nodeValue")
-//    .attr("x", 20)
-//    .attr("dy", "1.1em")
-//    .attr("text-anchor", "start")
-//    .text(function(d) { 
-//      return _this.selectedAttr + ": " + d[_this.selectedAttr];
-//    })
-//    .style("fill-opacity", 1);
-//
 
     // Transition nodes to their new position.
     var clientNodeUpdate = clientNode.transition()
@@ -570,72 +500,67 @@ NfsShareClientDistribView = Backbone.View.extend({
     shareNodeUpdate.select("text.nodeLabel")
     .style("fill-opacity", 1);
 
-    shareNodeUpdate.select("circle")
-    .attr("r", 10);
 
-//    nodeUpdate.select("text.nodeLabel")
-//    .style("fill-opacity", 1)
-//    .text(function(d) { 
-//      if (d.children) {
-//        return "- " + d.name;
-//      } else if (d._children) {
-//        return "+ " + d.name;
-//      } else {
-//        return d.name;
-//      }
-//    })
 //
 //    nodeUpdate.select("text.nodeValue")
 //    .text(function(d) { 
 //      return _this.selectedAttr + ": " + d[_this.selectedAttr];
 //    })
 //
-//    // Transition exiting nodes to the parent's new position.
-//    var nodeExit = node.exit().transition()
-//    .duration(duration)
-//    .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
-//    .remove();
-//
-//    nodeExit.select("circle")
-//    .attr("r", 1e-6);
-//
-//    nodeExit.select("text")
-//    .style("fill-opacity", 1e-6);
-//
-//    // Update the links…
-//    var link = this.vis.selectAll("path.link")
-//    .data(_this.d3tree.links(nodes), function(d) { return d.target.name; });
-//
-//    // Enter any new links at the parent's previous position.
-//    link.enter().insert("svg:path", "g")
-//    .attr("class", "link")
-//    .attr("d", function(d) {
-//      var o = {x: source.x0, y: source.y0};
-//      return _this.diagonal({source: o, target: o});
-//    })
-//    .transition()
-//    .duration(duration)
-//    .attr("d", _this.diagonal);
-//
-//    // Transition links to their new position.
-//    link.transition()
-//    .duration(duration)
-//    .attr("d", _this.diagonal);
-//
-//    // Transition exiting nodes to the parent's new position.
-//    link.exit().transition()
-//    .duration(duration)
-//    .attr("d", function(d) {
-//      var o = {x: source.x, y: source.y};
-//      return _this.diagonal({source: o, target: o});
-//    })
-//    .remove();
-//
-//    // Stash the old positions for transition.
-//    nodes.forEach(function(d) {
-//      d.x0 = d.x;
-//      d.y0 = d.y;
-//    });
+    // Transition exiting nodes to the parent's new position.
+    var clientNodeExit = clientNode.exit().transition()
+    .duration(duration)
+    .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
+    .remove();
+    
+    clientNodeExit.select("text")
+    .style("fill-opacity", 1e-6);
+
+    var shareNodeExit = shareNode.exit().transition()
+    .duration(duration)
+    .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
+    .remove();
+
+    //shareNodeExit.select("circle")
+    //.attr("r", 1e-6);
+
+    shareNodeExit.select("text")
+    .style("fill-opacity", 1e-6);
+
+    // Update links
+    var link = this.vis.selectAll("path.link")
+    .data(_this.d3tree.links(clientNodes), function(d) { return d.target.id; });
+
+    // Enter any new links at the parent's previous position.
+    link.enter().insert("svg:path", "g")
+    .attr("class", "link")
+    .attr("d", function(d) {
+      var o = {x: source.x0, y: source.y0};
+      return _this.diagonal({source: o, target: o});
+    })
+    .transition()
+    .duration(duration)
+    .attr("d", _this.diagonal);
+
+    // Transition links to their new position.
+    link.transition()
+    .duration(duration)
+    .attr("d", _this.diagonal);
+
+    // Transition exiting nodes to the parent's new position.
+    link.exit().transition()
+    .duration(duration)
+    .attr("d", function(d) {
+      var o = {x: source.x, y: source.y};
+      return _this.diagonal({source: o, target: o});
+    })
+    .remove();
+
+    // Stash the old positions for transition.
+    nodes.forEach(function(d) {
+      d.x0 = d.x;
+      d.y0 = d.y;
+    });
   },
 
   // Toggle children.
@@ -686,21 +611,25 @@ NfsShareClientDistribView = Backbone.View.extend({
 
   updateDetail: function(node, attr) {
     var str = "";
-    if (node.type == "client") {
-      str = str + "Client : " + node.name + "<br>"
-      +  "Share: All shares" + "<br>";
-    } else if (node.type == "share") {
-      str = str + "Client : " + node.clientName + "<br>"
-      +  "Share: " + node.name + "<br>";
-    } else if (node.type == "root") {
-      str = str + "Client : All clients <br>"
-      +  "Share: All shares <br>";
+    if (!_.isNull(node)) {
+      if (node.type == "client") {
+        str = str + "Client : " + node.name + "<br>"
+        +  "Share: All shares" + "<br>";
+      } else if (node.type == "share") {
+        str = str + "Client : " + node.clientName + "<br>"
+        +  "Share: " + node.name + "<br>";
+      } else if (node.type == "root") {
+        str = str + "Client : All clients <br>"
+        +  "Share: All shares <br>";
+
+      }
+      _.each(this.nfsAttrs, function(a) {
+        str = str + a + ": " + node[a] + "<br>";
+      });
+      $("#selected-node-detail-inner").html(str);
+    } else {
 
     }
-    _.each(this.nfsAttrs, function(a) {
-      str = str + a + ": " + node[a] + "<br>";
-    });
-    $("#selected-node-detail").html(str);
   },
 
   setSelectedNode: function(name) {

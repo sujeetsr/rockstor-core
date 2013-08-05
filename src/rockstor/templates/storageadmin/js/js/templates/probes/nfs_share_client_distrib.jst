@@ -1,27 +1,32 @@
-<div id="nfs-share-client-msg">
-  <table>
-    <tr>
-      <td>Select root: </td>
-      <td>
-        <input type="radio" name="selectedRoot" checked value="Clients">Clients</input>
-        <input type="radio" name="selectedRoot" value="Shares">Shares</input>
-      </td>
-    </tr>
-    <tr>
-      <td>Select attribute: </td>
-      <td>
-        <input type="radio" name="selectedAttr" checked value="num_read">num_read</input>
-        <input type="radio" name="selectedAttr" value="num_write">num_write</input>
-        <input type="radio" name="selectedAttr" value="num_lookup">num_lookup</input>
-      </td>
-    </tr>
-  </table>
-  Click a node to view details. Click + / - to expand / close.
+
+<div id="nfs-share-client-left" style="float: left">
+  <h4>Displaying top 5 <span id="selectedRootName">Clients</span> by <span id="selectedAttrName">num_read</span></h4>
   <br>
-  <br>
-  Displaying top 5 <span id="selectedRootName">Clients</span> by <span id="selectedAttrName">num_read</span>
+  <div id="nfs-share-client-graph"></div>
 </div>
 
-<div id="nfs-share-client-graph" style="float: left;"></div>
-<div id="selected-node-detail" style="float: left;"></div>
+<div id="nfs-share-client-right" style="float: left">
+  <div id="nfs-options">
+  
+    <div id="nfs-share-client-msg">
+      <h4>Select root</h4>
+      <input type="radio" name="selectedRoot" checked value="Clients">Clients</input>
+      <input type="radio" name="selectedRoot" value="Shares">Shares</input>
+      <br>
+      <h4>Select attribute:</h4> 
+      <input type="radio" name="selectedAttr" checked value="num_read">num_read</input><br>
+      <input type="radio" name="selectedAttr" value="num_write">num_write</input><br>
+      <input type="radio" name="selectedAttr" value="num_lookup">num_lookup</input>
+
+    </div>
+
+  </div>
+  <br>
+  <div id="selected-node-detail">
+    <h4>NFS attributes for selected node</h4>
+    <div id="selected-node-detail-inner">
+    </div>
+  
+  </div>
+</div>
 
