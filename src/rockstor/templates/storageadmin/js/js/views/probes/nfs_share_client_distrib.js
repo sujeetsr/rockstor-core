@@ -74,12 +74,13 @@ NfsShareClientDistribView = Backbone.View.extend({
         }
       }
       console.log(_this.selAttrs);
+      _this.$("#selectedAttrs").html(_this.selAttrs.join(","));
     });
 
     this.$("input:radio[name=selectedRoot]").click(function() {
       var value = $(this).val();
       console.log("root  = " + value);
-      _this.$("#treeType").html(value);
+      _this.$("#selectedRootName").html(value);
       _this.treeType = value;
     });
     
@@ -222,6 +223,12 @@ NfsShareClientDistribView = Backbone.View.extend({
     });
   },
 
+  findNodeWithId: function(nodeList, id) {
+    return _.find(nodeList, function(node) {
+      return node.id == id;
+    });
+  },
+
   findOrCreateNodeWithName: function(nodeList, name, nodeType, 
   d, attrList, treeType) {
     var node = this.findNodeWithName(nodeList, name);
@@ -315,7 +322,12 @@ NfsShareClientDistribView = Backbone.View.extend({
       node.children = [];
     } else if (nodeType == "client") {
       node.type = "client";
-      node.id = d.client;
+
+      if (treeType == "client") {
+        node.id = d.client;
+      } else {
+        node.id = d.client + "_" + d.share;
+      }
       node.name = d.client;
       node.share = d.share;
       if (treeType == "client") {
@@ -323,7 +335,11 @@ NfsShareClientDistribView = Backbone.View.extend({
       }
     } else if (nodeType == "share") {
       node.type = "share";
-      node.id = d.client + "_" + d.share;
+      if (treeType == "share") {
+        node.id = d.share;
+      } else {
+        node.id = d.client + "_" + d.share;
+      }
       node.name = d.share;
       node.client = d.client;
       if (treeType == "share") {
