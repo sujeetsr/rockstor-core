@@ -47,6 +47,11 @@ AddPoolView = Backbone.View.extend({
     this.disks.fetch({
       success: function(collection, response) {
         $(_this.el).append(_this.template({disks: _this.disks}));
+        _this.$('[data-showtip="true"]').tooltip({
+          placement: 'right',
+          trigger: 'focus hover',
+          container: $(_this.el),
+        });
         var err_msg = 'Incorrect number of disks';
         var raid_err_msg = function() {
           return err_msg;

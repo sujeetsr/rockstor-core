@@ -31,13 +31,13 @@
         <div class="control-group">
           <label class="control-label" for="share_name">Name<span class="required"> *</span></label>
           <div class="controls">
-            <input type="text" name="share_name" id="share_name">
+            <input type="text" name="share_name" id="share_name" data-showtip="true" title="Share Name">
           </div>
         </div>
         <div class="control-group">
           <label class="control-label" for="pool_name">Pool<span class="required"> *</span></label>
           <div class="controls">
-            <select id="pool_name" name="pool_name">
+            <select id="pool_name" name="pool_name" data-showtip="true" title="Create Share in this Pool">
               <% if(poolName == ''){%>
                 <% pools.each(function(pool, index) { %>
                   <% if (index > 0) { %>
@@ -68,7 +68,7 @@
           <label class="control-label" for="share_size">Size<span class="required"> *</span></label>
           <div class="controls">
             <input type="text" name="share_size" id="share_size">
-            <select id="size_format" name="size_format">
+            <select id="size_format" name="size_format" data-showtip="true" title="Share Size">
               <option>KB</option>
               <option>MB</option>
               <option>GB</option>

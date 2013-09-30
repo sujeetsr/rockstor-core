@@ -1534,3 +1534,29 @@ input[type="radio"].selectedRoot {
 
 .command-status { cursor: pointer; float: left; width: 20px; }
 
+/* Tooltip */
+.tooltip-inner {
+  max-width: 200px;
+  padding: 3px 8px;
+  color: #333;
+  text-align: center;
+  text-decoration: none;
+  background-color: #FFFF8A;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  box-shadow: 0 0 12px #aaa;
+}
+
+.tooltip.top .tooltip-arrow {
+  border-top: 5px solid #FFFF8A;
+}
+.tooltip.left .tooltip-arrow {
+  border-left: 5px solid #FFFF8A;
+}
+.tooltip.bottom .tooltip-arrow {
+  border-bottom: 5px solid #FFFF8A;
+}
+.tooltip.right .tooltip-arrow  {
+  border-right: 5px solid #FFFF8A;
+}

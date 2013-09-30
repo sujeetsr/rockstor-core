@@ -45,6 +45,11 @@ AddShareView = Backbone.View.extend({
     this.pools.fetch({
       success: function(collection, response) {
         $(_this.el).append(_this.template({pools: _this.pools, poolName: _this.poolName}));
+        _this.$('[data-showtip="true"]').tooltip({
+          placement: 'right',
+          trigger: 'focus hover',
+          container: $(_this.el),
+        });
         
         $('#add-share-form').validate({
             onfocusout: false,

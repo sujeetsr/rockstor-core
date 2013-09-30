@@ -50,6 +50,11 @@ AddReplicationTaskView = RockstoreLayoutView.extend({
       shares: this.shares,
       appliances: this.appliances
     }));
+    _this.$('[data-showtip="true"]').tooltip({
+      placement: 'right',
+      trigger: 'focus hover',
+      container: $(_this.el),
+    });
     $('#replication-task-create-form').validate({
       onfocusout: false,
       onkeyup: false,

@@ -30,13 +30,13 @@
         <div class="control-group">
           <label class="control-label" for="task_name">Task name<span class="required"> *</span></label>
           <div class="controls">
-            <input type="text" id="task_name" name="task_name" placeholder="Task name" >
+            <input type="text" id="task_name" name="task_name" data-showtip="true" title="Descriptive name for the task" placeholder="Task name" >
           </div>
         </div>
         <div class="control-group">
           <label class="control-label" for="share">Share to replicate<span class="required"> *</span></label>
           <div class="controls">
-            <select id="share" name="share">
+            <select id="share" name="share" data-showtip="true" title="Source share to replicate">
               <% shares.each(function(share, index) { %>
                 <option value="<%= share.get('name') %>"> <%= share.get('name') %> </option>
               <% }); %> 
@@ -47,7 +47,7 @@
         <div class="control-group">
           <label class="control-label" for="appliance">Target appliance<span class="required"> *</span></label>
           <div class="controls">
-            <select id="appliance" name="appliance">
+            <select id="appliance" name="appliance" data-showtip="true" title="Destination appliance to create the replica on">
               <% appliances.each(function(appliance, index) { %>
                 <option value="<%= appliance.get('ip') %>"> <%= appliance.get('ip') %> </option>
               <% }); %> 
@@ -58,13 +58,13 @@
         <div class="control-group">
           <label class="control-label" for="pool">Target pool name<span class="required"> *</span></label>
           <div class="controls">
-            <input type="text" id="pool" name="pool" placeholder="Target pool name" >
+            <input type="text" id="pool" name="pool" placeholder="Target pool name" data-showtip="true" title="Destination pool">
           </div>
         </div>
         <div class="control-group">
           <label class="control-label" for="frequency">Frequency in seconds<span class="required"> *</span></label>
           <div class="controls">
-            <input type="text" id="frequency" name="frequency" placeholder="Frequency" >
+            <input type="text" id="frequency" name="frequency" placeholder="Frequency"  data-showtip="true" title="Replication frequency">
           </div>
         </div>
         <div class="control-group">
