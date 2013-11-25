@@ -96,7 +96,8 @@
     <script src="/js/lib/humanize.js"></script>
     <script src="/js/lib/moment.min.js"></script>
     <script src="/js/lib/simple-slider.min.js"></script>
-    <script src="/js/application.js"></script>
+    {% load compressed %}
+    {% compressed_js 'application' %}
   </head>
   <body>
 

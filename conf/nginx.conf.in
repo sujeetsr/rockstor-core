@@ -65,7 +65,7 @@ http {
 			root ${buildout:directory}/src/rockstor/templates/storageadmin/;
 		}
 		location /js  {
-			root ${buildout:directory}/;
+			root ${buildout:directory}/src/rockstor/templates/storageadmin/js/;
 		}
 		location /img  {
 			root ${buildout:directory}/src/rockstor/templates/storageadmin/;
